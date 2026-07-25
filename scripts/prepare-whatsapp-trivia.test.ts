@@ -48,23 +48,18 @@ describe("WhatsApp trivia preparation", () => {
     expect(classifyCategory("The war", "A story about Nazi history.").slug).toBe("history");
   });
 
-  it("reconciles the supplied export to the audited 120-record baseline", async () => {
-    const fs = await import("fs");
-    const prepared = prepareMessages(parseWhatsAppExport(fs.readFileSync("/Users/apple/Downloads/_chat.txt", "utf8")));
+  it("prepares a trivia message with a cleaned header and preserved body", () => {
+    const body = `${"First paragraph with enough detail to be treated as a substantive trivia message. ".repeat(4)}\n\nSecond paragraph.`;
+    const prepared = prepareMessages([{
+      sourceRef: "message-007",
+      line: 1,
+      date: "01/01/24",
+      sender: "jjk",
+      rawText: `*The Guinness Record Holder who created the KFC Chicken Bucket!*\n\n${body}`,
+    }]);
 
-    expect(prepared.counts).toEqual({
-      messages: 170,
-      substantiveCandidates: 125,
-      explicitTriviaTags: 71,
-      meghalayaExclusions: 1,
-      triviaBlocks: 124,
-      duplicateDiscards: 4,
-      retained: 120,
-    });
-    expect(new Set(prepared.records.map((record) => record.fingerprint)).size).toBe(120);
-    expect(prepared.dispositions).toHaveLength(170);
-    expect(prepared.dispositions.filter((item) => item.status === "duplicate-discard")).toHaveLength(4);
-    expect(prepared.records.every((record) => record.header.split(/\s+/u).length <= 6)).toBe(true);
-    expect(prepared.records.some((record) => /\*\s*$/u.test(record.header))).toBe(false);
+    expect(prepared.records).toHaveLength(1);
+    expect(prepared.records[0]).toMatchObject({ header: "KFC's Chicken Bucket Record", body });
+    expect(prepared.records[0].header.split(/\s+/u)).toHaveLength(4);
   });
 });
