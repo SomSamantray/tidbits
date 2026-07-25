@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Category } from "@/lib/db/queries";
+import { accentStyle } from "@/lib/design/palette";
 
 function hrefFor(slug: string | null, searchTerm: string | null): string {
   const params = new URLSearchParams();
@@ -24,7 +25,7 @@ export function CategoryChips({
         href={hrefFor(null, searchTerm)}
         data-active={!activeSlug}
         className="chip rounded-full px-4 py-1.5 text-sm font-semibold"
-        style={{ "--accent": "var(--accent-sky)" } as React.CSSProperties}
+        style={accentStyle("var(--accent-sky)")}
       >
         All
       </Link>
@@ -34,7 +35,7 @@ export function CategoryChips({
           href={hrefFor(category.slug, searchTerm)}
           data-active={activeSlug === category.slug}
           className="chip rounded-full px-4 py-1.5 text-sm font-semibold"
-          style={{ "--accent": category.accent_color } as React.CSSProperties}
+          style={accentStyle(category.accentColor)}
         >
           {category.name}
         </Link>

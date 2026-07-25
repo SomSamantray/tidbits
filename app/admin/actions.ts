@@ -8,6 +8,7 @@ import {
   isValidSessionToken,
   sessionCookieMaxAge,
 } from "@/lib/auth/session";
+import { signedCookieOptions } from "@/lib/auth/crypto";
 import { insertTidbit } from "@/lib/db/queries";
 
 export type LoginState = { error: string | null };
@@ -21,13 +22,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
   }
 
   const cookieStore = await cookies();
-  cookieStore.set(ADMIN_SESSION_COOKIE, createSessionToken(), {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: sessionCookieMaxAge(),
-  });
+  cookieStore.set(ADMIN_SESSION_COOKIE, createSessionToken(), signedCookieOptions(sessionCookieMaxAge()));
 
   return { error: null };
 }

@@ -1,6 +1,6 @@
 import { randomUUID } from "crypto";
 import { cookies } from "next/headers";
-import { signValue, verifySignature } from "@/lib/auth/crypto";
+import { signValue, verifySignature, signedCookieOptions } from "@/lib/auth/crypto";
 
 const ANON_ID_COOKIE = "tidbits_anon_id";
 const ANON_ID_MAX_AGE = 60 * 60 * 24 * 365 * 2; // 2 years
@@ -25,12 +25,6 @@ export async function ensureAnonId(): Promise<string> {
 
   const id = randomUUID();
   const token = `${id}.${signValue(id)}`;
-  cookieStore.set(ANON_ID_COOKIE, token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/",
-    maxAge: ANON_ID_MAX_AGE,
-  });
+  cookieStore.set(ANON_ID_COOKIE, token, signedCookieOptions(ANON_ID_MAX_AGE));
   return id;
 }

@@ -5,7 +5,9 @@
   --foreground: #2d2a26;
   --foreground-soft: #6b6560;
 
-  /* Pastel accent rainbow — default palette categories pick from at seed time. */
+  /* Pastel accent rainbow — kept in sync by hand with ACCENT_PALETTE in
+     lib/design/palette.ts (the TS source of truth categories seed from);
+     update both if this palette changes. */
   --accent-coral: #ffadad;
   --accent-peach: #ffd6a5;
   --accent-butter: #fdffb6;

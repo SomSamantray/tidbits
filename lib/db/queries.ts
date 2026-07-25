@@ -5,7 +5,7 @@ export type Category = {
   id: number;
   slug: string;
   name: string;
-  accent_color: string;
+  accentColor: string;
 };
 
 export async function listCategories(db: Client = getDb()): Promise<Category[]> {
@@ -14,7 +14,7 @@ export async function listCategories(db: Client = getDb()): Promise<Category[]> 
     id: Number(row.id),
     slug: String(row.slug),
     name: String(row.name),
-    accent_color: String(row.accent_color),
+    accentColor: String(row.accent_color),
   }));
 }
 
@@ -48,20 +48,23 @@ export async function likeTidbit(
     });
     const incremented = insertResult.rows.length > 0;
 
+    let likeCount: number;
     if (incremented) {
-      await tx.execute({
-        sql: "UPDATE tidbits SET like_count = like_count + 1 WHERE id = ?",
+      const updateResult = await tx.execute({
+        sql: "UPDATE tidbits SET like_count = like_count + 1 WHERE id = ? RETURNING like_count",
         args: [tidbitId],
       });
+      likeCount = Number(updateResult.rows[0]?.like_count ?? 0);
+    } else {
+      const countResult = await tx.execute({
+        sql: "SELECT like_count FROM tidbits WHERE id = ?",
+        args: [tidbitId],
+      });
+      likeCount = Number(countResult.rows[0]?.like_count ?? 0);
     }
-
-    const countResult = await tx.execute({
-      sql: "SELECT like_count FROM tidbits WHERE id = ?",
-      args: [tidbitId],
-    });
     await tx.commit();
 
-    return { incremented, likeCount: Number(countResult.rows[0]?.like_count ?? 0) };
+    return { incremented, likeCount };
   } catch (error) {
     await tx.rollback();
     throw error;
@@ -179,7 +182,7 @@ export async function getFeedPage(
               AND tidbits.is_published = 1
               AND (? IS NULL OR categories.slug = ?)
               AND (? IS NULL OR (bm25(tidbits_fts) > ? OR (bm25(tidbits_fts) = ? AND tidbits.id > ?)))
-            ORDER BY bm25(tidbits_fts) ASC, tidbits.id ASC
+            ORDER BY rank ASC, tidbits.id ASC
             LIMIT ?`,
       args: [
         sanitizeSearchTerm(searchTerm),

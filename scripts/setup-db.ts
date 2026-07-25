@@ -1,7 +1,6 @@
-import { readFileSync } from "fs";
-import path from "path";
 import { getDb } from "../lib/db/client";
-import { ACCENT_PALETTE } from "../lib/design/palette";
+import { applySchema } from "../lib/db/schema";
+import { accentForIndex } from "../lib/design/palette";
 
 const DEFAULT_CATEGORIES = [
   { slug: "science", name: "Science" },
@@ -14,18 +13,12 @@ const DEFAULT_CATEGORIES = [
 
 async function main() {
   const db = getDb();
-  const schema = readFileSync(
-    path.join(__dirname, "../lib/db/schema.sql"),
-    "utf8",
-  );
-
-  // executeMultiple runs the whole schema file (DDL + triggers) as one batch.
-  await db.executeMultiple(schema);
+  await applySchema(db);
 
   for (const [index, category] of DEFAULT_CATEGORIES.entries()) {
     await db.execute({
       sql: "INSERT OR IGNORE INTO categories (slug, name, accent_color) VALUES (?, ?, ?)",
-      args: [category.slug, category.name, ACCENT_PALETTE[index % ACCENT_PALETTE.length].hex],
+      args: [category.slug, category.name, accentForIndex(index)],
     });
   }
 

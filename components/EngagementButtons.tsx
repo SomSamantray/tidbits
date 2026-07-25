@@ -31,7 +31,6 @@ export function EngagementButtons({
     try {
       const result = await like(tidbitId);
       setLikeCount(result.likeCount);
-      if (!result.incremented) setLiked(true); // already liked in an earlier session
     } catch {
       setLiked(false);
       setLikeCount((n) => n - 1);

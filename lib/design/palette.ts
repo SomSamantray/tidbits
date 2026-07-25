@@ -1,4 +1,11 @@
-/** Default pastel accent palette categories are seeded from (see U2/U3). */
+import type { CSSProperties } from "react";
+
+/**
+ * Default pastel accent palette categories are seeded from (see U2/U3).
+ * Kept in sync by hand with the `--accent-*` custom properties in
+ * app/globals.css (used as static fallbacks for chrome like the "All" chip)
+ * — update both if this palette changes.
+ */
 export const ACCENT_PALETTE = [
   { name: "coral", hex: "#FFADAD" },
   { name: "peach", hex: "#FFD6A5" },
@@ -12,4 +19,9 @@ export const ACCENT_PALETTE = [
 
 export function accentForIndex(index: number): string {
   return ACCENT_PALETTE[index % ACCENT_PALETTE.length].hex;
+}
+
+/** Sets the `--accent` custom property `.card-shell`/`.chip` read from (see globals.css). */
+export function accentStyle(accentColor: string): CSSProperties {
+  return { "--accent": accentColor } as CSSProperties;
 }

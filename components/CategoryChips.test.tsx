@@ -5,8 +5,8 @@ import { CategoryChips } from "./CategoryChips";
 import type { Category } from "@/lib/db/queries";
 
 const CATEGORIES: Category[] = [
-  { id: 1, slug: "science", name: "Science", accent_color: "#9BF6FF" },
-  { id: 2, slug: "history", name: "History", accent_color: "#FFD6A5" },
+  { id: 1, slug: "science", name: "Science", accentColor: "#9BF6FF" },
+  { id: 2, slug: "history", name: "History", accentColor: "#FFD6A5" },
 ];
 
 afterEach(cleanup);

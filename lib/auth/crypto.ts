@@ -19,3 +19,14 @@ export function verifySignature(value: string, signature: string): boolean {
   const actualBuf = Buffer.from(signature);
   return expectedBuf.length === actualBuf.length && timingSafeEqual(expectedBuf, actualBuf);
 }
+
+/** Shared shape for both the admin session cookie and the anon-id cookie. */
+export function signedCookieOptions(maxAge: number) {
+  return {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax" as const,
+    path: "/",
+    maxAge,
+  };
+}

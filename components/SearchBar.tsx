@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const DEBOUNCE_MS = 350;
 
@@ -20,6 +20,14 @@ export function SearchBar({ initialValue }: { initialValue: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Clear a pending debounced navigation on unmount so a stale search from
+  // before the visitor navigated away doesn't fire router.push() later.
+  useEffect(() => {
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, []);
 
   function navigate(term: string) {
     const params = new URLSearchParams(searchParams.toString());

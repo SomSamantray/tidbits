@@ -1,8 +1,8 @@
 import { createClient, type Client } from "@libsql/client";
-import { readFileSync } from "fs";
 import { randomUUID } from "crypto";
 import path from "path";
 import os from "os";
+import { applySchema } from "./schema";
 
 /**
  * Fresh libSQL DB with the schema applied, for isolated tests. Uses a unique
@@ -14,11 +14,7 @@ import os from "os";
 export async function createTestDb(): Promise<Client> {
   const dbPath = path.join(os.tmpdir(), `tidbits-test-${randomUUID()}.db`);
   const db = createClient({ url: `file:${dbPath}` });
-  const schema = readFileSync(
-    path.join(__dirname, "schema.sql"),
-    "utf8",
-  );
-  await db.executeMultiple(schema);
+  await applySchema(db);
   return db;
 }
 

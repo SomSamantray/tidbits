@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import Masonry from "react-masonry-css";
 import { TidbitCard } from "./TidbitCard";
 import type { Tidbit } from "@/lib/db/queries";
+import { accentStyle } from "@/lib/design/palette";
 
 // react-masonry-css distributes children round-robin (item i -> column i % N),
 // preserving each column's relative order — the "column-major" reading order
@@ -102,7 +103,7 @@ export function MasonryFeed({
             onClick={loadMore}
             disabled={loading}
             className="chip rounded-full px-5 py-2 font-display font-semibold disabled:opacity-60"
-            style={{ "--accent": "var(--accent-sky)" } as React.CSSProperties}
+            style={accentStyle("var(--accent-sky)")}
           >
             {loading ? "Loading…" : "Load more"}
           </button>
