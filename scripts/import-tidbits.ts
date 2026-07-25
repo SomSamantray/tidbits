@@ -225,6 +225,31 @@ export async function publishApproved(db: Client, fingerprints: string[]): Promi
   }
 }
 
+export async function reconcilePreparedHeaders(db: Client, entries: PreparedRecord[]): Promise<number> {
+  const tx = await db.transaction("write");
+  let updated = 0;
+  try {
+    for (const entry of entries) {
+      const matches = await tx.execute({ sql: "SELECT id, header, body, source_hash FROM tidbits WHERE body = ?", args: [entry.body] });
+      if (matches.rows.length !== 1) throw new Error(`Expected one existing tidbit body for ${entry.sourceRef}, found ${matches.rows.length}`);
+      const row = matches.rows[0];
+      const duplicateHash = await tx.execute({ sql: "SELECT id FROM tidbits WHERE source_hash = ? AND id != ?", args: [entry.fingerprint, Number(row.id)] });
+      if (duplicateHash.rows.length > 0) throw new Error(`Source hash collision for ${entry.sourceRef}`);
+      if (String(row.header) === entry.header && String(row.source_hash ?? "") === entry.fingerprint) continue;
+      await tx.execute({
+        sql: "UPDATE tidbits SET header = ?, source_hash = ? WHERE id = ?",
+        args: [entry.header, entry.fingerprint, Number(row.id)],
+      });
+      updated += 1;
+    }
+    await tx.commit();
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  }
+  return updated;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const dryRun = args.includes("--dry-run");

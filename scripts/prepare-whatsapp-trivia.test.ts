@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   classifyCategory,
+  cleanHeader,
   fingerprint,
   parseWhatsAppExport,
   prepareMessages,
@@ -27,6 +28,13 @@ describe("WhatsApp trivia preparation", () => {
       header: "*The title*",
       body: "First paragraph.\n\nSecond paragraph.",
     });
+  });
+
+  it("cleans approved headers without changing the body", () => {
+    const header = cleanHeader("message-007", "*The Guinness Record Holder who created the KFC Chicken Bucket!*");
+    expect(header).toBe("KFC's Chicken Bucket Record");
+    expect(header.trim().split(/\s+/u)).toHaveLength(4);
+    expect(cleanHeader("message-154", "*The Crazy Irony!*")).toBe("The Crazy Irony!");
   });
 
   it("uses a length-delimited fingerprint that changes when body whitespace changes", () => {
@@ -56,5 +64,7 @@ describe("WhatsApp trivia preparation", () => {
     expect(new Set(prepared.records.map((record) => record.fingerprint)).size).toBe(120);
     expect(prepared.dispositions).toHaveLength(170);
     expect(prepared.dispositions.filter((item) => item.status === "duplicate-discard")).toHaveLength(4);
+    expect(prepared.records.every((record) => record.header.split(/\s+/u).length <= 6)).toBe(true);
+    expect(prepared.records.some((record) => /\*\s*$/u.test(record.header))).toBe(false);
   });
 });

@@ -10,7 +10,8 @@
     "test": "vitest run",
     "db:setup": "tsx scripts/setup-db.ts",
     "import:tidbits": "tsx scripts/import-tidbits.ts",
-    "prepare:whatsapp": "tsx scripts/prepare-whatsapp-trivia.ts"
+    "prepare:whatsapp": "tsx scripts/prepare-whatsapp-trivia.ts",
+    "reconcile:tidbits": "tsx scripts/reconcile-tidbit-headers.ts"
   },
   "dependencies": {
     "@libsql/client": "^0.17.4",

@@ -49,6 +49,56 @@ export type PreparedRecord = {
   reviewStatus: "approved";
 };
 
+const HEADER_REWRITES: Record<string, string> = {
+  "message-007": "KFC's Chicken Bucket Record",
+  "message-019": "Tires Changed Restaurants",
+  "message-021": "A Remedy Became a Fortune",
+  "message-025": "America's Metric System Miss",
+  "message-028": "UI Design Inspired the iPhone",
+  "message-043": "Why CDs Hold 74 Minutes",
+  "message-045": "NASA's Exorcism Connection",
+  "message-059": "The MP3 Inventor",
+  "message-060": "Mona Lisa's Rise to Fame",
+  "message-071": "McDonald's Russian Catering Launch",
+  "message-072": "Pepsi, Coca-Cola, and Russia",
+  "message-073": "McDonald's Coca-Cola Partnership",
+  "message-074": "Microsoft's Activision Deal",
+  "message-078": "A Quick MSG Trivia",
+  "message-079": "War's Gift: Pyjamas",
+  "message-081": "A Lucky Start in Business",
+  "message-082": "Jensen Huang's Nvidia Tattoo",
+  "message-083": "FIFA's Surprising Second Business",
+  "message-088": "The Pirate Bay Story",
+  "message-090": "JAB's Chemical Company Origins",
+  "message-091": "Marvel and Sony's Spider-Man Fight",
+  "message-093": "Rolex's Surprising History",
+  "message-095": "General Mills' Wild History",
+  "message-096": "Michael Jackson's Music Betrayal",
+  "message-097": "Slack vs. Microsoft Teams",
+  "message-099": "The Blair Witch Profit Record",
+  "message-101": "Inside Disney Imagineering",
+  "message-102": "From Nupedia to Wikipedia",
+  "message-105": "Arnold Schwarzenegger's Political Story",
+  "message-107": "Lego's Impossible Bugatti",
+  "message-108": "The 1975 F1 Championship",
+  "message-110": "From Fish Sauce to Ketchup",
+  "message-111": "McDonald's Ice Cream Machine Mystery",
+  "message-112": "The MGM Studio Story",
+  "message-114": "American Kingpin's True Crime",
+  "message-115": "Guatemala's Banana Republic History",
+  "message-117": "Los Alamos' Nuclear Challenge",
+  "message-128": "America's Pickup Truck Boom",
+  "message-134": "The Nazi Uranium Hunt",
+  "message-136": "Citroën's Wartime Resistance",
+  "message-154": "The Crazy Irony!",
+  "message-155": "The Airbus Wiring Disaster",
+  "message-157": "The eBay Stalking Scandal",
+};
+
+export function cleanHeader(sourceRef: string, header: string): string {
+  return (HEADER_REWRITES[sourceRef] ?? header.replace(/^\s*\*+|\*+\s*$/gu, "").trim()).trim();
+}
+
 export function parseWhatsAppExport(raw: string): SourceMessage[] {
   const normalized = raw.replace(/\r\n?/gu, "\n");
   const lines = normalized.split("\n");
@@ -184,14 +234,15 @@ export function prepareMessages(messages: SourceMessage[]): {
     } else {
       dispositions.push({ ...candidate, status: "retained", reason: "reviewed trivia record retained" });
     }
+    const header = cleanHeader(candidate.sourceRef, candidate.header);
     const category = classifyCategory(candidate.header, candidate.body);
     records.push({
       sourceRef: candidate.sourceRef,
-      header: candidate.header,
+      header,
       body: candidate.body,
       category: category.slug,
       categoryReason: category.reason,
-      fingerprint: fingerprint(candidate.header, candidate.body),
+      fingerprint: fingerprint(header, candidate.body),
       reviewStatus: "approved",
     });
   }

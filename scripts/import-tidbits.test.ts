@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { buildCategoryMap, categorizeEntries, importPreparedEntries, parseEntries, publishApproved, validateEntries } from "./import-tidbits";
+import { buildCategoryMap, categorizeEntries, importPreparedEntries, parseEntries, publishApproved, reconcilePreparedHeaders, validateEntries } from "./import-tidbits";
 import { fingerprint, type PreparedRecord } from "./prepare-whatsapp-trivia";
-import { createTestDb, seedCategory } from "../lib/db/test-helpers";
+import { createTestDb, seedCategory, seedTidbit } from "../lib/db/test-helpers";
 
 describe("parseEntries", () => {
   it("parses a well-formed entry with header, body, and category", () => {
@@ -137,5 +137,20 @@ describe("structured prepared import", () => {
     expect(published).toHaveLength(1);
     const row = await db.execute({ sql: "SELECT is_published FROM tidbits WHERE source_hash = ?", args: [entry.fingerprint] });
     expect(Number(row.rows[0].is_published)).toBe(1);
+  });
+
+  it("reconciles cleaned headers by body and refreshes the FTS row atomically", async () => {
+    const db = await createTestDb();
+    const categoryId = await seedCategory(db);
+    const body = "A body that must remain exactly unchanged.";
+    const original = prepared({ header: "Old header", body, sourceRef: "message-007" });
+    const cleaned = prepared({ header: "New Header", body, sourceRef: "message-007" });
+    const id = await seedTidbit(db, categoryId, { header: original.header, body, sourceHash: original.fingerprint });
+
+    expect(await reconcilePreparedHeaders(db, [cleaned])).toBe(1);
+    const row = await db.execute({ sql: "SELECT header, body, source_hash FROM tidbits WHERE id = ?", args: [id] });
+    expect(row.rows[0]).toMatchObject({ header: cleaned.header, body, source_hash: cleaned.fingerprint });
+    const fts = await db.execute({ sql: "SELECT rowid FROM tidbits_fts WHERE tidbits_fts MATCH ?", args: ["New"] });
+    expect(fts.rows).toHaveLength(1);
   });
 });
