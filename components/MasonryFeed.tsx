@@ -11,7 +11,7 @@ import { accentStyle } from "@/lib/design/palette";
 // R4 settles for, since a single global chronological DOM order isn't
 // achievable with this library.
 export const RENDER_CAP = 500;
-const BREAKPOINTS = { default: 3, 1024: 2, 640: 1 };
+const BREAKPOINTS = { default: 4, 1024: 3, 640: 1 };
 
 export function MasonryFeed({
   initialItems,

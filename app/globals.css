@@ -57,6 +57,40 @@ h3,
     box-shadow 0.2s ease;
 }
 
+.tidbit-card {
+  cursor: pointer;
+  outline: none;
+}
+
+.tidbit-card:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--accent-sky) 70%, var(--foreground));
+  outline-offset: 4px;
+}
+
+.tidbit-body {
+  max-height: 5.5rem;
+  overflow: hidden;
+  transition: max-height 0.35s ease;
+}
+
+.tidbit-card[aria-expanded="true"] .tidbit-body {
+  max-height: 60rem;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tidbit-card:hover .tidbit-body,
+  .tidbit-card:focus-within .tidbit-body {
+    max-height: 60rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tidbit-body,
+  .card-shell {
+    transition: none;
+  }
+}
+
 .card-shell:hover {
   transform: translateY(-4px);
   box-shadow:

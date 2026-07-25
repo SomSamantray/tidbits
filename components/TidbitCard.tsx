@@ -1,11 +1,31 @@
+"use client";
+
+import { type KeyboardEvent, type MouseEvent, useState } from "react";
 import type { Tidbit } from "@/lib/db/queries";
 import { accentStyle } from "@/lib/design/palette";
 import { EngagementButtons } from "./EngagementButtons";
 
 export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
+  const [expanded, setExpanded] = useState(false);
+
+  function toggleFromCard(event: MouseEvent<HTMLElement>) {
+    if ((event.target as HTMLElement).closest("button, a, input, textarea, select")) return;
+    setExpanded((value) => !value);
+  }
+
+  function toggleFromKeyboard(event: KeyboardEvent<HTMLElement>) {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    setExpanded((value) => !value);
+  }
+
   return (
     <article
-      className="card-shell mb-5 flex flex-col gap-3 p-5"
+      className="card-shell tidbit-card mb-5 flex flex-col gap-3 p-5"
+      tabIndex={0}
+      aria-expanded={expanded}
+      onClick={toggleFromCard}
+      onKeyDown={toggleFromKeyboard}
       style={accentStyle(tidbit.category.accentColor)}
     >
       <span
@@ -15,7 +35,7 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
         {tidbit.category.name}
       </span>
       <h2 className="font-display text-lg font-semibold text-ink">{tidbit.header}</h2>
-      <p className="text-sm leading-relaxed text-ink-soft">{tidbit.body}</p>
+      <p className="tidbit-body text-sm leading-relaxed text-ink-soft">{tidbit.body}</p>
 
       <EngagementButtons
         tidbitId={tidbit.id}

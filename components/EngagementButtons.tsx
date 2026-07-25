@@ -70,6 +70,7 @@ export function EngagementButtons({
   return (
     <div className="relative mt-1 flex items-center gap-4 text-sm text-ink-soft">
       <button
+        type="button"
         onClick={handleLike}
         aria-pressed={liked}
         aria-label={liked ? "Liked" : "Like this tidbit"}
@@ -78,7 +79,7 @@ export function EngagementButtons({
         <span className={animating ? "heart-pop" : undefined}>{liked ? "❤️" : "🤍"}</span>
         {formatCompact(likeCount)}
       </button>
-      <button onClick={handleShare} aria-label="Share this tidbit" className="flex items-center gap-1">
+      <button type="button" onClick={handleShare} aria-label="Share this tidbit" className="flex items-center gap-1">
         <span>🔗</span>
         {formatCompact(shareCount)}
       </button>
