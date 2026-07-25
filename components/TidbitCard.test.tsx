@@ -36,20 +36,20 @@ describe("TidbitCard", () => {
 
     const card = screen.getByRole("article");
     const body = screen.getByText(/a long body/i);
-    expect(card.getAttribute("aria-expanded")).toBe("false");
+    expect(card.getAttribute("data-expanded")).toBe("false");
     expect(body.classList.contains("tidbit-body")).toBe(true);
 
     fireEvent.click(card);
-    expect(card.getAttribute("aria-expanded")).toBe("true");
+    expect(card.getAttribute("data-expanded")).toBe("true");
 
     fireEvent.keyDown(card, { key: "Enter" });
-    expect(card.getAttribute("aria-expanded")).toBe("false");
+    expect(card.getAttribute("data-expanded")).toBe("false");
   });
 
   it("does not toggle when an engagement control is activated", () => {
     render(<TidbitCard tidbit={makeTidbit()} />);
 
     fireEvent.click(screen.getByRole("button", { name: /like this tidbit/i }));
-    expect(screen.getByRole("article").getAttribute("aria-expanded")).toBe("false");
+    expect(screen.getByRole("article").getAttribute("data-expanded")).toBe("false");
   });
 });

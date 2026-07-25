@@ -23,7 +23,8 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
     <article
       className="card-shell tidbit-card mb-5 flex flex-col gap-3 p-5"
       tabIndex={0}
-      aria-expanded={expanded}
+      data-expanded={expanded}
+      aria-describedby={`tidbit-state-${tidbit.id}`}
       onClick={toggleFromCard}
       onKeyDown={toggleFromKeyboard}
       style={accentStyle(tidbit.category.accentColor)}
@@ -36,6 +37,9 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
       </span>
       <h2 className="font-display text-lg font-semibold text-ink">{tidbit.header}</h2>
       <p className="tidbit-body text-sm leading-relaxed text-ink-soft">{tidbit.body}</p>
+      <span id={`tidbit-state-${tidbit.id}`} className="sr-only">
+        {expanded ? "Tidbit expanded" : "Tidbit collapsed; activate to read the full tidbit"}
+      </span>
 
       <EngagementButtons
         tidbitId={tidbit.id}

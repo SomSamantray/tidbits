@@ -73,7 +73,7 @@ h3,
   transition: max-height 0.35s ease;
 }
 
-.tidbit-card[aria-expanded="true"] .tidbit-body {
+.tidbit-card[data-expanded="true"] .tidbit-body {
   max-height: 60rem;
 }
 
