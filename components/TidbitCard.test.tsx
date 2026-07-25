@@ -49,7 +49,10 @@ describe("TidbitCard", () => {
   it("does not toggle when an engagement control is activated", () => {
     render(<TidbitCard tidbit={makeTidbit()} />);
 
-    fireEvent.click(screen.getByRole("button", { name: /like this tidbit/i }));
+    const likeButton = screen.getByRole("button", { name: /like this tidbit/i });
+    fireEvent.click(likeButton);
+    fireEvent.keyDown(likeButton, { key: "Enter" });
+    fireEvent.keyDown(likeButton, { key: " " });
     expect(screen.getByRole("article").getAttribute("data-expanded")).toBe("false");
   });
 });

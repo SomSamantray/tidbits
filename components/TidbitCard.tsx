@@ -14,6 +14,7 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
   }
 
   function toggleFromKeyboard(event: KeyboardEvent<HTMLElement>) {
+    if ((event.target as HTMLElement).closest("button, a, input, textarea, select")) return;
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
     setExpanded((value) => !value);
