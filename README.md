@@ -1,36 +1,39 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Tidbits
 
-## Getting Started
+Tidbits is a colorful, cartoonish feed of bite-sized trivia and fun facts. It uses Next.js, Turso/libSQL, and PostHog.
 
-First, run the development server:
+## Run locally
+
+Install dependencies and start the development server:
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000). Copy `.env.local.example` to `.env.local` and fill in the database, admin, cookie, and analytics values needed for your local setup.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Useful checks:
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm test
+npm run lint
+npm run build
+```
 
-## Learn More
+## Production metadata, previews, and sitemap
 
-To learn more about Next.js, take a look at the following resources:
+Set `NEXT_PUBLIC_SITE_URL` in the Vercel **Production** environment to the final public HTTPS origin, for example `https://tidbits.example`. Do not add a path, query string, or trailing application route. Redeploy after changing it.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+The app then publishes:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- `/sitemap.xml` — the canonical public homepage URL.
+- `/robots.txt` — public crawl rules and the sitemap location.
+- `/opengraph-image.png` and `/twitter-image.png` — the branded 1200×630 preview artwork.
+- `/icon.svg`, `/favicon.ico`, and `/apple-icon.png` — browser and mobile brand icons.
+
+For the complete beginner-friendly deployment and preview checklist, see [`docs/seo-sharing.md`](docs/seo-sharing.md).
 
 ## Deploy on Vercel
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Import the repository into Vercel, configure the production environment variables from `.env.local.example`, and deploy. Turso must be reachable from the deployed app, and the production database must already have its schema and tidbits imported.
