@@ -13,11 +13,11 @@ afterEach(() => {
 describe("root metadata", () => {
   it("publishes the canonical and social metadata from the production origin", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://tidbits.example");
+    vi.stubEnv("NEXT_PUBLIC_SITE_URL", "https://teedbits.vercel.app");
 
     const { metadata } = await import("./layout");
 
-    expect(metadata.metadataBase?.toString()).toBe("https://tidbits.example/");
+    expect(metadata.metadataBase?.toString()).toBe("https://teedbits.vercel.app/");
     expect(metadata.alternates?.canonical).toBe("/");
     expect(metadata.openGraph).toMatchObject({
       type: "website",
@@ -34,5 +34,15 @@ describe("root metadata", () => {
       card: "summary_large_image",
       images: ["/opengraph-image.png"],
     });
+
+    const metadataUrls = [
+      metadata.alternates?.canonical,
+      metadata.openGraph?.url,
+      ...(Array.isArray(metadata.openGraph?.images) ? metadata.openGraph.images.map((image) => image.url) : []),
+      ...(Array.isArray(metadata.twitter?.images) ? metadata.twitter.images : []),
+    ].map((value) => new URL(String(value), metadata.metadataBase));
+
+    expect(metadataUrls.every((url) => url.origin === "https://teedbits.vercel.app")).toBe(true);
+    expect(metadataUrls.some((url) => url.hostname === "tidbits-nine.vercel.app")).toBe(false);
   });
 });

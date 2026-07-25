@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest run",
+    "verify:seo": "tsx scripts/verify-public-seo.ts",
     "db:setup": "tsx scripts/setup-db.ts",
     "import:tidbits": "tsx scripts/import-tidbits.ts",
     "prepare:whatsapp": "tsx scripts/prepare-whatsapp-trivia.ts",

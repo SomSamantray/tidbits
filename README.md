@@ -23,7 +23,7 @@ npm run build
 
 ## Production metadata, previews, and sitemap
 
-Set `NEXT_PUBLIC_SITE_URL` in the Vercel **Production** environment to the final public HTTPS origin, for example `https://tidbits.example`. Do not add a path, query string, or trailing application route. Redeploy after changing it.
+Set `NEXT_PUBLIC_SITE_URL` in the Vercel **Production** environment to `https://teedbits.vercel.app`. Do not use the legacy `https://tidbits-nine.vercel.app` alias (it redirects), a path, or a query string. Redeploy after changing it.
 
 Vercel Preview deployments may leave `NEXT_PUBLIC_SITE_URL` unset. In that case, the app uses Vercel's built-in `VERCEL_URL` as a temporary HTTPS origin so the Preview can build. Preview URLs are never used as the production canonical URL.
 
@@ -33,6 +33,8 @@ The app then publishes:
 - `/robots.txt` — public crawl rules and the sitemap location.
 - `/opengraph-image.png` — the branded 1200×630 preview artwork used by both Open Graph and Twitter-compatible metadata.
 - `/icon.svg`, `/favicon.ico`, and `/apple-icon.png` — browser and mobile brand icons.
+
+The favicon is a browser icon; WhatsApp and LinkedIn previews use the Open Graph image. A successful public asset check makes the deployment HTTP-ready, but third-party preview caches still need their own refresh.
 
 For the complete beginner-friendly deployment and preview checklist, see [`docs/seo-sharing.md`](docs/seo-sharing.md).
 
