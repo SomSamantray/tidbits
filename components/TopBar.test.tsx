@@ -8,6 +8,7 @@ afterEach(cleanup);
 describe("TopBar", () => {
   it("exposes the About action and functional theme toggle", () => {
     render(<TopBar />);
+    expect(screen.getByRole("link", { name: "Tidbits home" })).toBeDefined();
     expect(screen.getByRole("button", { name: "About" })).toBeDefined();
     const toggle = screen.getByRole("button", { name: "Switch to dark theme" });
     expect(toggle).toBeDefined();

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AboutModal } from "./AboutModal";
 import { ThemeToggle } from "./ThemeToggle";
+import { BrandMark } from "./BrandMark";
 import posthog from "posthog-js";
 
 export function TopBar() {
@@ -11,7 +12,7 @@ export function TopBar() {
   return (
     <>
       <nav className="top-bar" aria-label="Primary navigation">
-        <span className="font-display text-2xl font-semibold text-ink">Tidbits</span>
+        <BrandMark />
         <div className="flex items-center gap-2">
           <button
             type="button"

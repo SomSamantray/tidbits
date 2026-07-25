@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fredoka, Nunito } from "next/font/google";
+import { getSiteUrl, SITE_DESCRIPTION, SITE_NAME } from "@/lib/seo/site-url";
 import "./globals.css";
 
 const fredoka = Fredoka({
@@ -14,10 +15,41 @@ const nunito = Nunito({
   weight: ["400", "600", "700", "800"],
 });
 
+const siteUrl = getSiteUrl();
+
 export const metadata: Metadata = {
-  title: "Tidbits — bite-sized trivia",
-  description:
-    "A colorful, cartoonish feed of bite-sized trivia and fun facts.",
+  metadataBase: siteUrl,
+  title: {
+    default: "Tidbits — bite-sized trivia",
+    template: "%s | Tidbits",
+  },
+  description: SITE_DESCRIPTION,
+  applicationName: SITE_NAME,
+  alternates: {
+    canonical: "/",
+  },
+  openGraph: {
+    type: "website",
+    url: "/",
+    siteName: SITE_NAME,
+    locale: "en_US",
+    title: "Tidbits — bite-sized trivia",
+    description: SITE_DESCRIPTION,
+    images: [
+      {
+        url: "/opengraph-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Tidbits — bite-sized trivia to make you smile.",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Tidbits — bite-sized trivia",
+    description: SITE_DESCRIPTION,
+    images: ["/opengraph-image.png"],
+  },
 };
 
 export default function RootLayout({
