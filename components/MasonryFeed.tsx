@@ -5,13 +5,15 @@ import Masonry from "react-masonry-css";
 import { TidbitCard } from "./TidbitCard";
 import type { Tidbit } from "@/lib/db/queries";
 import { accentStyle } from "@/lib/design/palette";
+import { SkeletonCard } from "./SkeletonCard";
 
 // react-masonry-css distributes children round-robin (item i -> column i % N),
 // preserving each column's relative order — the "column-major" reading order
 // R4 settles for, since a single global chronological DOM order isn't
 // achievable with this library.
 export const RENDER_CAP = 500;
-const BREAKPOINTS = { default: 4, 1024: 3, 640: 1 };
+export const BREAKPOINTS = { default: 3, 1024: 2, 640: 1 };
+const SKELETON_COUNT = 6;
 
 export function MasonryFeed({
   initialItems,
@@ -28,6 +30,7 @@ export function MasonryFeed({
   const [cursor, setCursor] = useState(initialCursor);
   const [loading, setLoading] = useState(false);
   const [loadError, setLoadError] = useState(false);
+  const loadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // No prop-sync effect needed: page.tsx keys MasonryFeed by
@@ -35,7 +38,8 @@ export function MasonryFeed({
   // fresh rather than updating props on the same instance.
 
   const loadMore = useCallback(async () => {
-    if (loading || !cursor || items.length >= RENDER_CAP) return;
+    if (loadingRef.current || !cursor || items.length >= RENDER_CAP) return;
+    loadingRef.current = true;
     setLoading(true);
     setLoadError(false);
     try {
@@ -52,16 +56,17 @@ export function MasonryFeed({
       // Keep the previously-loaded items visible; surface a retry affordance instead.
       setLoadError(true);
     } finally {
+      loadingRef.current = false;
       setLoading(false);
     }
-  }, [cursor, loading, items.length, categorySlug, searchTerm]);
+  }, [cursor, items.length, categorySlug, searchTerm]);
 
   useEffect(() => {
     const sentinel = sentinelRef.current;
     if (!sentinel) return;
-    const observer = new IntersectionObserver((entries) => {
-      if (entries[0]?.isIntersecting) loadMore();
-    });
+      const observer = new IntersectionObserver((entries) => {
+        if (entries[0]?.isIntersecting) loadMore();
+      }, { rootMargin: "800px 0px" });
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [loadMore]);
@@ -79,6 +84,7 @@ export function MasonryFeed({
         {items.map((tidbit) => (
           <TidbitCard key={tidbit.id} tidbit={tidbit} />
         ))}
+        {loading && Array.from({ length: SKELETON_COUNT }, (_, index) => <SkeletonCard key={`skeleton-${index}`} />)}
       </Masonry>
 
       <div ref={sentinelRef} className="h-1" />

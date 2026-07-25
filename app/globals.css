@@ -4,6 +4,10 @@
   --background: #fff8ef;
   --foreground: #2d2a26;
   --foreground-soft: #6b6560;
+  --surface: #fffdf8;
+  --surface-muted: #f7eee4;
+  --border: rgba(45, 42, 38, 0.14);
+  --backdrop: rgba(45, 42, 38, 0.34);
 
   /* Pastel accent rainbow — kept in sync by hand with ACCENT_PALETTE in
      lib/design/palette.ts (the TS source of truth categories seed from);
@@ -36,6 +40,30 @@ body {
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
 
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #101a31;
+    --foreground: #f7f0e8;
+    --foreground-soft: #c5c0c5;
+    --surface: #1c2943;
+    --surface-muted: #243452;
+    --border: rgba(239, 230, 218, 0.2);
+    --backdrop: rgba(3, 8, 18, 0.72);
+    --accent-coral: #d88992;
+    --accent-peach: #d8a66f;
+    --accent-butter: #d2c878;
+    --accent-mint: #86b985;
+    --accent-sky: #72bcc9;
+    --accent-periwinkle: #849dd1;
+    --accent-lavender: #a497cf;
+    --accent-pink: #cf9bc7;
+  }
+
+  body {
+    background-image: url("/backgrounds/tidbits-doodle-wallpaper-dark.png");
+  }
+}
+
 h1,
 h2,
 h3,
@@ -46,47 +74,80 @@ h3,
 /* Claymorphism card shell: set `--accent` inline per card/category. */
 .card-shell {
   --accent: var(--accent, var(--accent-peach));
-  background: color-mix(in srgb, var(--accent) 14%, white);
+  background: color-mix(in srgb, var(--accent) 14%, var(--surface));
   border-radius: 1.25rem;
-  border: 2px solid color-mix(in srgb, var(--accent) 35%, white);
+  border: 2px solid color-mix(in srgb, var(--accent) 35%, var(--surface));
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--accent) 50%, white) inset,
+    0 1px 0 color-mix(in srgb, var(--accent) 50%, var(--surface)) inset,
     0 10px 24px -12px color-mix(in srgb, var(--accent) 70%, black 12%);
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
 }
 
-.tidbit-card {
+.tidbit-card-body {
   cursor: pointer;
   outline: none;
+  border-radius: 0.75rem;
 }
 
-.tidbit-card:focus-visible {
+.tidbit-card-body:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent-sky) 70%, var(--foreground));
   outline-offset: 4px;
 }
 
+.tidbit-copy-window {
+  position: relative;
+}
+
 .tidbit-body {
-  max-height: 5.5rem;
+  max-height: 5.25rem;
+  padding-bottom: 1.35rem;
   overflow: hidden;
   transition: max-height 0.35s ease;
 }
 
-.tidbit-card[data-expanded="true"] .tidbit-body {
+.tidbit-card-body[data-expanded="true"] .tidbit-body {
   max-height: 60rem;
 }
 
+.read-more-hint {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  padding-left: 1.5rem;
+  background: linear-gradient(90deg, transparent, var(--surface) 20%);
+  color: var(--foreground);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+}
+
+.mobile-hint {
+  display: none;
+}
+
 @media (hover: hover) and (pointer: fine) {
-  .tidbit-card:hover .tidbit-body,
-  .tidbit-card:focus-within .tidbit-body {
+  .tidbit-card-body:hover .tidbit-body,
+  .tidbit-card-body:focus-within .tidbit-body {
     max-height: 60rem;
+  }
+}
+
+@media (pointer: coarse) {
+  .desktop-hint {
+    display: none;
+  }
+
+  .mobile-hint {
+    display: inline;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .tidbit-body,
-  .card-shell {
+  .card-shell,
+  .skeleton-card {
     transition: none;
   }
 }
@@ -101,8 +162,8 @@ h3,
 /* Chunky pill chip, same accent-variable convention as card-shell. */
 .chip {
   --accent: var(--accent, var(--accent-sky));
-  background: color-mix(in srgb, var(--accent) 20%, white);
-  border: 2px solid color-mix(in srgb, var(--accent) 45%, white);
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface));
+  border: 2px solid color-mix(in srgb, var(--accent) 45%, var(--surface));
   color: color-mix(in srgb, var(--accent) 65%, var(--foreground) 60%);
   transition:
     transform 0.15s ease,
@@ -135,4 +196,167 @@ h3,
 .heart-pop {
   display: inline-block;
   animation: heart-pop 0.3s ease;
+}
+
+.skeleton-card {
+  min-height: 12rem;
+  border: 2px solid color-mix(in srgb, var(--foreground) 9%, transparent);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--surface) 82%, var(--foreground));
+  opacity: 0.72;
+}
+
+.skeleton-line {
+  display: block;
+  width: 100%;
+  height: 0.85rem;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--foreground) 13%, transparent);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
+
+.skeleton-chip {
+  width: 28%;
+  height: 1.35rem;
+}
+
+.skeleton-title {
+  width: 72%;
+  height: 1.2rem;
+}
+
+.skeleton-short {
+  width: 58%;
+}
+
+@keyframes skeleton-pulse {
+  50% {
+    opacity: 0.45;
+  }
+}
+
+.feed-shell {
+  width: 100%;
+}
+
+.top-bar {
+  position: sticky;
+  top: 1rem;
+  z-index: 20;
+  display: flex;
+  width: min(100%, 92rem);
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 1rem 0.7rem 1.2rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 86%, transparent);
+  box-shadow: 0 12px 30px -20px var(--foreground);
+  backdrop-filter: blur(14px);
+}
+
+.top-bar-link,
+.theme-indicator {
+  color: var(--foreground);
+}
+
+.top-bar-link {
+  border-radius: 999px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.top-bar-link:hover,
+.top-bar-link:focus-visible {
+  background: var(--surface-muted);
+  outline: none;
+}
+
+.theme-indicator {
+  display: inline-flex;
+  min-width: 2.3rem;
+  justify-content: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 0.35rem 0.5rem;
+  font-size: 1.1rem;
+}
+
+.theme-moon {
+  display: none;
+}
+
+@media (prefers-color-scheme: dark) {
+  .theme-sun {
+    display: none;
+  }
+
+  .theme-moon {
+    display: inline;
+  }
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+  background: var(--backdrop);
+}
+
+.about-modal {
+  position: relative;
+  width: min(100%, 30rem);
+  max-width: 30rem;
+  border: 2px solid var(--border);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  background: var(--surface);
+  color: var(--foreground);
+  box-shadow: 0 24px 70px -30px #000;
+}
+
+.modal-close {
+  position: absolute;
+  top: 0.8rem;
+  right: 1rem;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 999px;
+  color: var(--foreground);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.modal-close:hover,
+.modal-close:focus-visible {
+  background: var(--surface-muted);
+  outline: none;
+}
+
+.eyebrow {
+  margin-bottom: 0.4rem;
+  color: var(--foreground-soft);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.engagement-slab {
+  position: relative;
+  z-index: 2;
+}
+
+@media (max-width: 640px) {
+  .top-bar {
+    top: 0.5rem;
+  }
+
+  .about-modal {
+    padding: 1.5rem;
+  }
 }

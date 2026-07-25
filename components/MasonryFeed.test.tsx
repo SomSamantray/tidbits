@@ -34,21 +34,21 @@ beforeEach(() => {
 });
 
 describe("MasonryFeed", () => {
-  it("renders 4 columns at desktop width", () => {
+  it("renders 3 columns at desktop width", () => {
     setViewportWidth(1280);
     const { container } = render(
       <MasonryFeed initialItems={[makeTidbit(), makeTidbit(), makeTidbit(), makeTidbit()]} initialCursor={null} />,
     );
-    expect(container.querySelectorAll(".pl-5").length).toBe(4);
+    expect(container.querySelectorAll(".pl-5").length).toBe(3);
     cleanup();
   });
 
-  it("renders 3 columns at tablet width", () => {
+  it("renders 2 columns at tablet width", () => {
     setViewportWidth(800);
     const { container } = render(
       <MasonryFeed initialItems={[makeTidbit(), makeTidbit(), makeTidbit()]} initialCursor={null} />,
     );
-    expect(container.querySelectorAll(".pl-5").length).toBe(3);
+    expect(container.querySelectorAll(".pl-5").length).toBe(2);
     cleanup();
   });
 
@@ -89,11 +89,11 @@ describe("MasonryFeed", () => {
     ];
     const { container } = render(<MasonryFeed initialItems={items} initialCursor={null} />);
     const columns = container.querySelectorAll(".pl-5");
-    // 4 columns, round-robin: col0 -> [A], col1 -> [B], col2 -> [C], col3 -> [D]
+    // 3 columns, round-robin: col0 -> [A, D], col1 -> [B], col2 -> [C]
     expect(columns[0].textContent).toContain("A");
     expect(columns[1].textContent).toContain("B");
     expect(columns[2].textContent).toContain("C");
-    expect(columns[3].textContent).toContain("D");
+    expect(columns[0].textContent).toContain("D");
     cleanup();
   });
 
@@ -105,6 +105,23 @@ describe("MasonryFeed", () => {
 
     await waitFor(() => expect(screen.getByText(/couldn't load more tidbits/i)).toBeDefined());
     expect(screen.getByText("Kept")).toBeDefined();
+    cleanup();
+    vi.unstubAllGlobals();
+  });
+
+  it("shows stable skeleton cards while the next page is loading", async () => {
+    let resolveRequest: ((value: unknown) => void) | undefined;
+    vi.stubGlobal("fetch", vi.fn(() => new Promise((resolve) => {
+      resolveRequest = resolve;
+    })));
+
+    const { container } = render(<MasonryFeed initialItems={[makeTidbit()]} initialCursor="some-cursor" />);
+    fireEvent.click(screen.getByText(/load more/i));
+    await waitFor(() => expect(container.querySelectorAll(".skeleton-card").length).toBe(6));
+    expect(screen.getByText("Header")).toBeDefined();
+
+    resolveRequest?.({ ok: true, json: async () => ({ items: [], nextCursor: null }) });
+    await waitFor(() => expect(container.querySelectorAll(".skeleton-card").length).toBe(0));
     cleanup();
     vi.unstubAllGlobals();
   });

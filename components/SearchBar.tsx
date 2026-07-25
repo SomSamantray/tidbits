@@ -54,7 +54,7 @@ export function SearchBar({ initialValue }: { initialValue: string }) {
         onChange={(e) => handleChange(e.target.value)}
         placeholder="Search tidbits…"
         aria-label="Search tidbits"
-        className="w-full rounded-full border-2 border-ink/10 bg-white px-5 py-2.5 text-ink outline-none focus:border-ink/30"
+        className="w-full rounded-full border-2 border-[var(--border)] bg-[var(--surface)] px-5 py-2.5 text-ink outline-none placeholder:text-ink-soft focus:border-ink/50"
       />
     </div>
   );

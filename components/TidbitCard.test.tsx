@@ -34,16 +34,17 @@ describe("TidbitCard", () => {
   it("starts compact and toggles the complete body on card activation", () => {
     render(<TidbitCard tidbit={makeTidbit()} />);
 
-    const card = screen.getByRole("article");
+    const bodyRegion = screen.getByText(/a long body/i).closest(".tidbit-card-body");
     const body = screen.getByText(/a long body/i);
-    expect(card.getAttribute("data-expanded")).toBe("false");
+    expect(bodyRegion?.getAttribute("data-expanded")).toBe("false");
     expect(body.classList.contains("tidbit-body")).toBe(true);
 
-    fireEvent.click(card);
-    expect(card.getAttribute("data-expanded")).toBe("true");
+    expect(bodyRegion).not.toBeNull();
+    fireEvent.click(bodyRegion!);
+    expect(bodyRegion?.getAttribute("data-expanded")).toBe("true");
 
-    fireEvent.keyDown(card, { key: "Enter" });
-    expect(card.getAttribute("data-expanded")).toBe("false");
+    fireEvent.keyDown(bodyRegion!, { key: "Enter" });
+    expect(bodyRegion?.getAttribute("data-expanded")).toBe("false");
   });
 
   it("does not toggle when an engagement control is activated", () => {
@@ -53,6 +54,6 @@ describe("TidbitCard", () => {
     fireEvent.click(likeButton);
     fireEvent.keyDown(likeButton, { key: "Enter" });
     fireEvent.keyDown(likeButton, { key: " " });
-    expect(screen.getByRole("article").getAttribute("data-expanded")).toBe("false");
+    expect(screen.getByRole("article").querySelector(".tidbit-card-body")?.getAttribute("data-expanded")).toBe("false");
   });
 });
