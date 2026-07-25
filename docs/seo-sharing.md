@@ -15,7 +15,7 @@ This guide is for the final Vercel deployment. It explains what to set, what to 
 4. Use the final public HTTPS origin only. Do not add `/`, `/admin`, a search query, or a Vercel preview URL.
 5. Save the variable and redeploy the Production deployment.
 
-The application deliberately rejects a missing or insecure production URL so canonical links, previews, robots, and the sitemap cannot silently point to localhost or a temporary deployment.
+The application deliberately rejects a missing or insecure Production URL so canonical links, previews, robots, and the sitemap cannot silently point to localhost or a temporary deployment. Vercel Preview builds may omit this variable: when `VERCEL_ENV=preview`, the app uses Vercel's built-in `VERCEL_URL` as a temporary HTTPS origin. That Preview URL is not treated as the production canonical URL.
 
 ## 2. Check the deployed public surfaces
 

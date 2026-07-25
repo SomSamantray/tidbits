@@ -6,12 +6,29 @@ export const SITE_DESCRIPTION = "A colorful, cartoonish feed of bite-sized trivi
 type SiteUrlEnv = {
   NEXT_PUBLIC_SITE_URL?: string;
   NODE_ENV?: string;
+  VERCEL_ENV?: string;
+  VERCEL_URL?: string;
 };
 
 export function getSiteUrl(env: SiteUrlEnv = process.env): URL {
   const rawUrl = env.NEXT_PUBLIC_SITE_URL?.trim();
 
   if (!rawUrl) {
+    if (env.VERCEL_ENV === "preview" && env.VERCEL_URL?.trim()) {
+      const previewOrigin = env.VERCEL_URL.trim();
+      const previewUrl = new URL(
+        previewOrigin.startsWith("http://") || previewOrigin.startsWith("https://")
+          ? previewOrigin
+          : `https://${previewOrigin}`,
+      );
+
+      if (previewUrl.protocol !== "https:" || previewUrl.pathname !== "/" || previewUrl.search || previewUrl.hash) {
+        throw new Error("VERCEL_URL must be an HTTPS origin without a path or query string.");
+      }
+
+      return new URL(previewUrl.origin + "/");
+    }
+
     if (env.NODE_ENV === "production") {
       throw new Error("NEXT_PUBLIC_SITE_URL must be set to the public HTTPS site URL in production.");
     }

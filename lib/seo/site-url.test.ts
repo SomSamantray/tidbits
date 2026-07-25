@@ -16,6 +16,16 @@ describe("getSiteUrl", () => {
     expect(() => getSiteUrl({ NODE_ENV: "production" })).toThrow(/must be set/i);
   });
 
+  it("uses the Vercel preview origin when the production URL is not configured", () => {
+    expect(
+      getSiteUrl({
+        NODE_ENV: "production",
+        VERCEL_ENV: "preview",
+        VERCEL_URL: "tidbits-git-feature.vercel.app",
+      }).toString(),
+    ).toBe("https://tidbits-git-feature.vercel.app/");
+  });
+
   it("rejects malformed, insecure, and path-based production origins", () => {
     expect(() => getSiteUrl({ NEXT_PUBLIC_SITE_URL: "not-a-url", NODE_ENV: "production" })).toThrow(/valid absolute/i);
     expect(() => getSiteUrl({ NEXT_PUBLIC_SITE_URL: "http://tidbits.example", NODE_ENV: "production" })).toThrow(/HTTPS/i);

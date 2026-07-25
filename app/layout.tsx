@@ -48,7 +48,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Tidbits — bite-sized trivia",
     description: SITE_DESCRIPTION,
-    images: ["/twitter-image.png"],
+    images: ["/opengraph-image.png"],
   },
 };
 
