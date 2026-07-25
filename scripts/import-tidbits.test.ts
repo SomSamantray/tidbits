@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
-import { parseEntries, categorizeEntries } from "./import-tidbits";
+import { buildCategoryMap, categorizeEntries, importPreparedEntries, parseEntries, publishApproved, validateEntries } from "./import-tidbits";
+import { fingerprint, type PreparedRecord } from "./prepare-whatsapp-trivia";
+import { createTestDb, seedCategory } from "../lib/db/test-helpers";
 
 describe("parseEntries", () => {
   it("parses a well-formed entry with header, body, and category", () => {
@@ -54,5 +56,86 @@ describe("categorizeEntries", () => {
     );
     expect(ready).toHaveLength(0);
     expect(needsReview).toHaveLength(1);
+  });
+});
+
+function prepared(overrides: Partial<PreparedRecord> = {}): PreparedRecord {
+  const header = overrides.header ?? "Header with preserved paragraphs";
+  const body = overrides.body ?? "First paragraph.\n\nSecond paragraph.";
+  return {
+    sourceRef: overrides.sourceRef ?? "message-001",
+    header,
+    body,
+    category: overrides.category ?? "science",
+    categoryReason: overrides.categoryReason ?? "test category",
+    fingerprint: overrides.fingerprint ?? fingerprint(header, body),
+    reviewStatus: overrides.reviewStatus ?? "approved",
+  };
+}
+
+describe("structured prepared import", () => {
+  it("inserts exact multiline content unpublished and updates exactly one FTS row", async () => {
+    const db = await createTestDb();
+    const categoryId = await seedCategory(db);
+    const entry = prepared();
+
+    const result = await importPreparedEntries(db, [entry], { expectedCount: 1 });
+    expect(result.insertedIds).toHaveLength(1);
+    const row = await db.execute({ sql: "SELECT header, body, category_id, is_published, source_hash FROM tidbits", args: [] });
+    expect(row.rows[0]).toMatchObject({ header: entry.header, body: entry.body, category_id: categoryId, is_published: 0, source_hash: entry.fingerprint });
+    const fts = await db.execute({ sql: "SELECT rowid FROM tidbits_fts WHERE rowid = ?", args: [result.insertedIds[0]] });
+    expect(fts.rows).toHaveLength(1);
+  });
+
+  it("is idempotent on an exact rerun", async () => {
+    const db = await createTestDb();
+    await seedCategory(db);
+    const entry = prepared();
+    const first = await importPreparedEntries(db, [entry], { expectedCount: 1 });
+    const second = await importPreparedEntries(db, [entry], { expectedCount: 1 });
+    expect(first.insertedIds).toHaveLength(1);
+    expect(second.insertedIds).toHaveLength(0);
+    expect(second.existingIds).toEqual(first.insertedIds);
+  });
+
+  it("blocks a tampered fingerprint or likely private identifier before writing", async () => {
+    const db = await createTestDb();
+    await seedCategory(db);
+    const result = await importPreparedEntries(db, [prepared({ fingerprint: "tampered" })], { expectedCount: 1 });
+    expect(result.issueCount).toBeGreaterThan(0);
+    const count = await db.execute("SELECT COUNT(*) AS count FROM tidbits");
+    expect(Number(count.rows[0].count)).toBe(0);
+    expect(validateEntries([prepared({ body: "Contact me at test@example.com" })], new Map([["science", 1]]))).toEqual([
+      { sourceRef: "message-001", reason: "likely private identifier" },
+    ]);
+  });
+
+  it("rejects ambiguous category tokens instead of overwriting a mapping", () => {
+    expect(() => buildCategoryMap([
+      { id: 1, slug: "science", name: "Science" },
+      { id: 2, slug: "other", name: "Science" },
+    ])).toThrow("Ambiguous category token");
+  });
+
+  it("rolls back both tidbits and FTS rows when an insert trigger fails", async () => {
+    const db = await createTestDb();
+    await seedCategory(db);
+    await db.execute("CREATE TRIGGER abort_tidbit BEFORE INSERT ON tidbits BEGIN SELECT RAISE(ABORT, 'test failure'); END");
+    await expect(importPreparedEntries(db, [prepared()], { expectedCount: 1 })).rejects.toThrow("test failure");
+    const rows = await db.execute("SELECT COUNT(*) AS count FROM tidbits");
+    const fts = await db.execute("SELECT COUNT(*) AS count FROM tidbits_fts");
+    expect(Number(rows.rows[0].count)).toBe(0);
+    expect(Number(fts.rows[0].count)).toBe(0);
+  });
+
+  it("publishes only the explicit approved fingerprint allowlist", async () => {
+    const db = await createTestDb();
+    await seedCategory(db);
+    const entry = prepared();
+    await importPreparedEntries(db, [entry], { expectedCount: 1 });
+    const published = await publishApproved(db, [entry.fingerprint]);
+    expect(published).toHaveLength(1);
+    const row = await db.execute({ sql: "SELECT is_published FROM tidbits WHERE source_hash = ?", args: [entry.fingerprint] });
+    expect(Number(row.rows[0].is_published)).toBe(1);
   });
 });

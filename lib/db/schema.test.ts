@@ -2,6 +2,14 @@ import { describe, expect, it } from "vitest";
 import { createTestDb, seedCategory, seedTidbit } from "./test-helpers";
 
 describe("tidbits schema", () => {
+  it("stores a nullable unique source fingerprint and enforces foreign keys", async () => {
+    const db = await createTestDb();
+    const columns = await db.execute("PRAGMA table_info(tidbits)");
+    expect(columns.rows.some((row) => row.name === "source_hash")).toBe(true);
+    const foreignKeys = await db.execute("PRAGMA foreign_keys");
+    expect(Number(foreignKeys.rows[0]?.foreign_keys)).toBe(1);
+  });
+
   it("keeps tidbits_fts in sync via triggers and returns matches on insert", async () => {
     const db = await createTestDb();
     const categoryId = await seedCategory(db);

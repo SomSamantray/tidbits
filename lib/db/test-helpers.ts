@@ -37,15 +37,17 @@ export async function seedCategory(
 export async function seedTidbit(
   db: Client,
   categoryId: number,
-  overrides: Partial<{ header: string; body: string; createdAt: number }> = {},
+  overrides: Partial<{ header: string; body: string; createdAt: number; sourceHash: string | null; isPublished: number }> = {},
 ): Promise<number> {
   const result = await db.execute({
-    sql: "INSERT INTO tidbits (header, body, category_id, created_at) VALUES (?, ?, ?, ?) RETURNING id",
+    sql: "INSERT INTO tidbits (header, body, category_id, created_at, source_hash, is_published) VALUES (?, ?, ?, ?, ?, ?) RETURNING id",
     args: [
       overrides.header ?? "Sample header",
       overrides.body ?? "Sample body text.",
       categoryId,
       overrides.createdAt ?? Math.floor(Date.now() / 1000),
+      overrides.sourceHash ?? null,
+      overrides.isPublished ?? 1,
     ],
   });
   return Number(result.rows[0].id);

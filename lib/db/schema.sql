@@ -13,7 +13,8 @@ CREATE TABLE IF NOT EXISTS tidbits (
   created_at INTEGER NOT NULL DEFAULT (unixepoch()),
   like_count INTEGER NOT NULL DEFAULT 0,
   share_count INTEGER NOT NULL DEFAULT 0,
-  is_published INTEGER NOT NULL DEFAULT 1
+  is_published INTEGER NOT NULL DEFAULT 1,
+  source_hash TEXT
 );
 
 CREATE INDEX IF NOT EXISTS idx_tidbits_category_created
