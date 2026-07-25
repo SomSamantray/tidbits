@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 192" role="img" aria-labelledby="title desc">
+  <title id="title">Tidbits</title>
+  <desc id="desc">A cheerful hand-doodled Tidbits wordmark with a smiling speech bubble.</desc>
+  <defs>
+    <linearGradient id="bubble" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#ffd6a5"/>
+      <stop offset="1" stop-color="#ffadad"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(12 12) rotate(-3 82 82)">
+    <path d="M84 7c42-2 72 29 72 69 0 33-15 56-40 69-10 5-20 9-30 14l-17-20c-31 7-58-13-63-44C0 60 18 12 84 7Z" fill="url(#bubble)" stroke="#2d2a26" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M47 78c5-18 16-27 31-27 15 0 27 10 31 27" fill="none" stroke="#2d2a26" stroke-linecap="round" stroke-width="7"/>
+    <circle cx="55" cy="68" r="5" fill="#2d2a26"/>
+    <circle cx="102" cy="68" r="5" fill="#2d2a26"/>
+    <path d="M63 91c9 8 21 8 30 0" fill="none" stroke="#2d2a26" stroke-linecap="round" stroke-width="6"/>
+    <path d="m139 19 5-10 4 10 10 4-10 5-4 10-5-10-10-5Z" fill="#fdffb6" stroke="#2d2a26" stroke-linejoin="round" stroke-width="4"/>
+  </g>
+  <text x="190" y="125" fill="#2d2a26" font-family="Fredoka, Nunito, Arial, sans-serif" font-size="104" font-weight="700" letter-spacing="-4">Tidbits</text>
+  <path d="M198 147c92 18 210 17 303 0" fill="none" stroke="#ff8a65" stroke-linecap="round" stroke-width="7"/>
+  <circle cx="520" cy="53" r="7" fill="#a0c4ff"/>
+  <circle cx="548" cy="42" r="5" fill="#caffbf"/>
+</svg>
