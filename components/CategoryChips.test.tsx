@@ -36,4 +36,12 @@ describe("CategoryChips", () => {
     expect(allChip?.getAttribute("data-active")).toBe("false");
     expect(allChip?.getAttribute("href")).toBe("/?q=octopus");
   });
+
+  it("keeps every filter chip on the shared contrast and focus styling hook", () => {
+    render(<CategoryChips categories={CATEGORIES} activeSlug="science" searchTerm={null} />);
+
+    expect(screen.getByText("All").closest("a")?.className).toContain("chip");
+    expect(screen.getByText("Science").closest("a")?.className).toContain("chip");
+    expect(screen.getByText("History").closest("a")?.className).toContain("chip");
+  });
 });

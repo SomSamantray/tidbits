@@ -10,6 +10,7 @@ import {
 } from "@/lib/auth/session";
 import { signedCookieOptions } from "@/lib/auth/crypto";
 import { insertTidbit } from "@/lib/db/queries";
+import { getPostHogClient } from "@/lib/posthog-server";
 
 export type LoginState = { error: string | null };
 
@@ -23,6 +24,16 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
 
   const cookieStore = await cookies();
   cookieStore.set(ADMIN_SESSION_COOKIE, createSessionToken(), signedCookieOptions(sessionCookieMaxAge()));
+
+  const posthog = getPostHogClient();
+  if (posthog) {
+    try {
+      posthog.capture({ distinctId: "admin", event: "admin_logged_in", properties: {} });
+      await posthog.flush();
+    } catch {
+      // Analytics must not turn a successful admin login into an app error.
+    }
+  }
 
   return { error: null };
 }
@@ -55,6 +66,20 @@ export async function addTidbit(
   await insertTidbit({ header, body, categoryId });
   revalidatePath("/");
   revalidatePath("/admin");
+
+  const posthog = getPostHogClient();
+  if (posthog) {
+    try {
+      posthog.capture({
+        distinctId: "admin",
+        event: "tidbit_created",
+        properties: { category_id: categoryId, header_length: header.length, body_length: body.length },
+      });
+      await posthog.flush();
+    } catch {
+      // Analytics must not turn a successful tidbit creation into an app error.
+    }
+  }
 
   return { error: null, success: true };
 }

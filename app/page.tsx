@@ -4,6 +4,7 @@ import { MasonryFeed } from "@/components/MasonryFeed";
 import { CategoryChips } from "@/components/CategoryChips";
 import { SearchBar } from "@/components/SearchBar";
 import { TopBar } from "@/components/TopBar";
+import { BackToTopButton } from "@/components/BackToTopButton";
 
 // KTD5: read per request, never prerendered — likes/shares and new tidbits
 // must always be fresh, and there's no cache layer to invalidate.
@@ -62,6 +63,7 @@ export default async function Home({
           />
         )}
       </main>
+      <BackToTopButton />
     </div>
   );
 }

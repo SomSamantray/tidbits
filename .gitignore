@@ -48,3 +48,4 @@ local.db*
 /data/raw/
 /data/staging/
 /data/reports/
+.env.local

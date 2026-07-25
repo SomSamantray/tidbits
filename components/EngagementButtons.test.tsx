@@ -5,15 +5,21 @@ import { EngagementButtons } from "./EngagementButtons";
 
 const likeMock = vi.fn();
 const shareMock = vi.fn();
+const captureMock = vi.fn();
 
 vi.mock("@/app/actions/engagement", () => ({
   like: (...args: unknown[]) => likeMock(...args),
   share: (...args: unknown[]) => shareMock(...args),
 }));
 
+vi.mock("posthog-js", () => ({
+  default: { capture: (...args: unknown[]) => captureMock(...args) },
+}));
+
 beforeEach(() => {
   likeMock.mockReset();
   shareMock.mockReset();
+  captureMock.mockReset();
 });
 
 afterEach(cleanup);
@@ -27,6 +33,7 @@ describe("EngagementButtons — like", () => {
 
     expect(screen.getByText("1")).toBeDefined();
     await waitFor(() => expect(likeMock).toHaveBeenCalledWith(1));
+    expect(captureMock).toHaveBeenCalledWith("tidbit_liked", { tidbit_id: 1 });
   });
 
   it("does not call the like action again on a second click (already liked this session)", async () => {
@@ -51,6 +58,7 @@ describe("EngagementButtons — like", () => {
     await waitFor(() => expect(screen.getByText("5")).toBeDefined());
     expect(screen.getByLabelText(/like this tidbit/i)).toBeDefined();
     expect(screen.getByText(/couldn't like this tidbit/i)).toBeDefined();
+    expect(captureMock).not.toHaveBeenCalledWith("tidbit_liked", expect.anything());
   });
 
   it("does not send duplicate like requests while the first request is pending", async () => {
@@ -69,6 +77,12 @@ describe("EngagementButtons — like", () => {
 });
 
 describe("EngagementButtons — share", () => {
+  it("shows the share icon, label, and current count", () => {
+    render(<EngagementButtons tidbitId={1} header="H" body="Body" initialLikeCount={0} initialShareCount={2} />);
+
+    expect(screen.getByRole("button", { name: /share this tidbit/i }).textContent).toBe("🔗Share2");
+  });
+
   it("increments the share count via clipboard fallback when Web Share API is unavailable", async () => {
     shareMock.mockResolvedValue({ shareCount: 3 });
     Object.defineProperty(navigator, "share", { value: undefined, configurable: true });
@@ -82,6 +96,7 @@ describe("EngagementButtons — share", () => {
 
     await waitFor(() => expect(screen.getByText("3")).toBeDefined());
     expect(shareMock).toHaveBeenCalledWith(1);
+    expect(captureMock).toHaveBeenCalledWith("tidbit_shared", { tidbit_id: 1, share_method: "clipboard" });
   });
 
   it("copies the complete header, body, and URL in the clipboard fallback", async () => {

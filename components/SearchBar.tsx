@@ -2,6 +2,7 @@
 
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import posthog from "posthog-js";
 
 const DEBOUNCE_MS = 350;
 
@@ -33,6 +34,7 @@ export function SearchBar({ initialValue }: { initialValue: string }) {
     const params = new URLSearchParams(searchParams.toString());
     if (term.trim()) {
       params.set("q", term.trim());
+      posthog.capture("search_performed", { query_length: term.trim().length });
     } else {
       params.delete("q");
     }

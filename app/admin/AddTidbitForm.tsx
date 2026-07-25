@@ -3,12 +3,17 @@
 import { useActionState, useRef, useEffect } from "react";
 import { addTidbit, logout, type AddTidbitState } from "./actions";
 import type { Category } from "@/lib/db/queries";
+import posthog from "posthog-js";
 
 const initialState: AddTidbitState = { error: null, success: false };
 
 export function AddTidbitForm({ categories }: { categories: Category[] }) {
   const [state, formAction, isPending] = useActionState(addTidbit, initialState);
   const formRef = useRef<HTMLFormElement>(null);
+
+  useEffect(() => {
+    posthog.identify("admin");
+  }, []);
 
   useEffect(() => {
     if (state.success) formRef.current?.reset();

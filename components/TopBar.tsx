@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { AboutModal } from "./AboutModal";
 import { ThemeToggle } from "./ThemeToggle";
+import posthog from "posthog-js";
 
 export function TopBar() {
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -15,7 +16,7 @@ export function TopBar() {
           <button
             type="button"
             className="top-bar-link"
-            onClick={() => setAboutOpen(true)}
+            onClick={() => { setAboutOpen(true); posthog.capture("about_opened"); }}
             aria-haspopup="dialog"
             aria-expanded={aboutOpen}
           >

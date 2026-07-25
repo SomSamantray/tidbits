@@ -3,7 +3,6 @@
 import {
   type KeyboardEvent,
   type MouseEvent,
-  type PointerEvent,
   useEffect,
   useRef,
   useState,
@@ -11,6 +10,7 @@ import {
 import type { Tidbit } from "@/lib/db/queries";
 import { accentStyle } from "@/lib/design/palette";
 import { EngagementButtons } from "./EngagementButtons";
+import posthog from "posthog-js";
 
 const CATEGORY_ICONS: Record<string, string> = {
   animals: "🐾",
@@ -32,11 +32,26 @@ function splitBodyIntoParagraphs(body: string) {
 }
 
 export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
-  const [expanded, setExpanded] = useState(false);
+  const [expanded, setExpanded] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [collapsible, setCollapsible] = useState(false);
   const bodyRef = useRef<HTMLDivElement>(null);
-  const hoverActivatedRef = useRef(false);
   const paragraphs = splitBodyIntoParagraphs(tidbit.body);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
+
+    const mediaQuery = window.matchMedia("(max-width: 640px)");
+    const updateViewportMode = () => {
+      const mobile = mediaQuery.matches;
+      setIsMobile(mobile);
+      setExpanded(!mobile);
+    };
+
+    updateViewportMode();
+    mediaQuery.addEventListener("change", updateViewportMode);
+    return () => mediaQuery.removeEventListener("change", updateViewportMode);
+  }, []);
 
   useEffect(() => {
     const body = bodyRef.current;
@@ -50,7 +65,7 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
       // browsers always use the rendered overflow measurement above.
       const fallbackOverflow = typeof ResizeObserver === "undefined" && tidbit.body.length > 120;
       setCollapsible(overflowing || fallbackOverflow);
-      if (!overflowing && !fallbackOverflow) setExpanded(false);
+      if (!overflowing && !fallbackOverflow) setExpanded(true);
     };
 
     const frame = requestAnimationFrame(measure);
@@ -69,43 +84,37 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
   function toggleFromBody(event: MouseEvent<HTMLElement>) {
     if ((event.target as HTMLElement).closest("button, a, input, textarea, select")) return;
     if (!collapsible) return;
-    if (typeof window !== "undefined" && window.matchMedia("(hover: hover) and (pointer: fine)").matches) return;
-    setExpanded((value) => !value);
+    if (!isMobile) return;
+    const next = !expanded;
+    setExpanded(next);
+    if (next) posthog.capture("tidbit_expanded", { tidbit_id: tidbit.id, method: "touch_tap" });
   }
 
   function toggleFromBodyKeyboard(event: KeyboardEvent<HTMLElement>) {
     if ((event.target as HTMLElement).closest("button, a, input, textarea, select")) return;
     if (!collapsible) return;
+    if (!isMobile) return;
     if (event.key !== "Enter" && event.key !== " ") return;
     event.preventDefault();
-    setExpanded((value) => !value);
-  }
-
-  function expandFromPointer(event: PointerEvent<HTMLElement>) {
-    if (event.pointerType === "touch" || !collapsible) return;
-    hoverActivatedRef.current = true;
-    setExpanded(true);
-  }
-
-  function collapseAfterPointerLeaves(event: PointerEvent<HTMLElement>) {
-    if (event.pointerType === "touch" || !hoverActivatedRef.current) return;
-    hoverActivatedRef.current = false;
-    setExpanded(false);
+    const next = !expanded;
+    setExpanded(next);
+    if (next) posthog.capture("tidbit_expanded", { tidbit_id: tidbit.id, method: "keyboard" });
   }
 
   return (
     <article
       className="card-shell tidbit-card p-5"
       style={accentStyle(tidbit.category.accentColor)}
-      onPointerLeave={collapseAfterPointerLeaves}
     >
-      <span
+      <div
         className="tidbit-category-meta text-sm font-bold"
         style={accentStyle(tidbit.category.accentColor)}
       >
-        <span aria-hidden="true">{CATEGORY_ICONS[tidbit.category.slug] ?? "✨"}</span>
+        <span className="tidbit-category-badge" aria-hidden="true">
+          {CATEGORY_ICONS[tidbit.category.slug] ?? "✨"}
+        </span>
         <span>{tidbit.category.name}</span>
-      </span>
+      </div>
       <div className="engagement-slab">
         <EngagementButtons
           tidbitId={tidbit.id}
@@ -126,9 +135,8 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
         aria-describedby={collapsible ? `tidbit-state-${tidbit.id}` : undefined}
         onClick={toggleFromBody}
         onKeyDown={toggleFromBodyKeyboard}
-        onPointerEnter={expandFromPointer}
         onFocus={() => {
-          if (collapsible) setExpanded(true);
+          if (isMobile && collapsible) setExpanded(true);
         }}
       >
         <h2 className="font-display text-lg font-semibold text-ink">{tidbit.header}</h2>

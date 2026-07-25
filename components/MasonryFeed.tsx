@@ -5,6 +5,7 @@ import { TidbitCard } from "./TidbitCard";
 import type { Tidbit } from "@/lib/db/queries";
 import { accentStyle } from "@/lib/design/palette";
 import { SkeletonCard } from "./SkeletonCard";
+import posthog from "posthog-js";
 
 export const RENDER_CAP = 500;
 export const BREAKPOINTS = { default: 3, 1024: 2, 640: 1 };
@@ -46,6 +47,11 @@ export function MasonryFeed({
       if (!response.ok) throw new Error(`Feed request failed: ${response.status}`);
       const data: { items: Tidbit[]; nextCursor: string | null } = await response.json();
       setItems((prev) => [...prev, ...data.items]);
+      posthog.capture("feed_loaded_more", {
+        items_loaded: data.items.length,
+        total_items: items.length + data.items.length,
+        category_slug: categorySlug ?? null,
+      });
       setCursor(data.nextCursor);
     } catch {
       // Keep the previously-loaded items visible; surface a retry affordance instead.

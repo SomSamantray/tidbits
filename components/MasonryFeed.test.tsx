@@ -34,7 +34,7 @@ beforeEach(() => {
 });
 
 describe("MasonryFeed", () => {
-  it("renders cards in one source-ordered stable grid without transforms", () => {
+  it("renders cards as direct, source-ordered masonry items without transforms", () => {
     const { container } = render(<MasonryFeed initialItems={[
       makeTidbit({ id: 1, header: "A" }),
       makeTidbit({ id: 2, header: "B" }),
@@ -45,6 +45,7 @@ describe("MasonryFeed", () => {
     const items = [...container.querySelectorAll(".masonry-grid-item")];
     expect(grid).not.toBeNull();
     expect(items).toHaveLength(4);
+    expect(items.every((item) => item.parentElement === grid)).toBe(true);
     expect(items.map((item) => item.textContent?.includes("A"))).toEqual([true, false, false, false]);
     expect(items.every((item) => item.style.transform === "")).toBe(true);
     cleanup();

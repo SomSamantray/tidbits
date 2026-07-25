@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { like, share } from "@/app/actions/engagement";
 import { formatCompact } from "@/lib/format";
+import posthog from "posthog-js";
 
 export function EngagementButtons({
   tidbitId,
@@ -35,6 +36,7 @@ export function EngagementButtons({
     try {
       const result = await like(tidbitId);
       setLikeCount(result.likeCount);
+      posthog.capture("tidbit_liked", { tidbit_id: tidbitId });
     } catch {
       setLiked(false);
       setLikeCount((n) => n - 1);
@@ -51,9 +53,11 @@ export function EngagementButtons({
     const clipboardText = url ? `${shareText}\n\nRead more: ${url}` : shareText;
     const shareData = { title: header, text: shareText, url };
 
+    let shareMethod: "native" | "clipboard" | null = null;
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
         await navigator.share(shareData);
+        shareMethod = "native";
       } catch {
         return; // user cancelled the native share sheet — don't count it
       }
@@ -62,12 +66,15 @@ export function EngagementButtons({
         await navigator.clipboard.writeText(clipboardText);
         setToast("Tidbit copied!");
         setTimeout(() => setToast(null), 2000);
+        shareMethod = "clipboard";
       } catch {
         return;
       }
     } else {
       return;
     }
+
+    posthog.capture("tidbit_shared", { tidbit_id: tidbitId, share_method: shareMethod });
 
     try {
       const result = await share(tidbitId);
@@ -92,7 +99,8 @@ export function EngagementButtons({
         {formatCompact(likeCount)}
       </button>
       <button type="button" onClick={handleShare} aria-label="Share this tidbit" className="share-action flex items-center gap-1">
-        <span>🔗</span>
+        <span aria-hidden="true">🔗</span>
+        <span>Share</span>
         {formatCompact(shareCount)}
       </button>
       {toast && (
