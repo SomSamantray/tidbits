@@ -8,7 +8,7 @@ The wizard has completed a deep integration of PostHog analytics into the Tidbit
 |---|---|---|
 | `tidbit_liked` | A like is successfully recorded for a tidbit. | `components/EngagementButtons.tsx` |
 | `tidbit_shared` | User successfully shares a tidbit via native share sheet or clipboard. | `components/EngagementButtons.tsx` |
-| `tidbit_expanded` | User expands a collapsed tidbit card to read the full body. | `components/TidbitCard.tsx` |
+| `tidbit_expanded` | Retired: cards now render their complete body on initial load at every breakpoint. | Formerly `components/TidbitCard.tsx` |
 | `search_performed` | User submits a non-empty search query. | `components/SearchBar.tsx` |
 | `feed_loaded_more` | Infinite scroll successfully loads the next batch of tidbits. | `components/MasonryFeed.tsx` |
 | `about_opened` | User opens the About modal from the top navigation bar. | `components/TopBar.tsx` |

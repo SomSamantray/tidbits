@@ -11,6 +11,7 @@ type CategoryRow = { id: unknown; slug: unknown; name: unknown };
 type CategoryMap = Map<string, number>;
 type ImportIssue = { sourceRef: string; reason: string };
 type ExistingRow = { id: number; categoryId: number; isPublished: number; sourceHash: string | null };
+type ReconciliationRow = { id: number; categoryId: number; sourceHash: string };
 
 type LegacyEntry = { header: string; body: string; categoryToken: string | null };
 type CategorizedLegacyEntry = LegacyEntry & { categoryId: number };
@@ -243,6 +244,85 @@ export async function reconcilePreparedHeaders(db: Client, entries: PreparedReco
       updated += 1;
     }
     await tx.commit();
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  }
+  return updated;
+}
+
+/**
+ * Reconcile a corrected artifact to the approved artifact by source identity.
+ * The old fingerprint is the only row selector; header/body equality is not
+ * safe here because the corrected artifact deliberately restores source text.
+ */
+export async function reconcilePreparedEntries(
+  db: Client,
+  previousEntries: PreparedRecord[],
+  correctedEntries: PreparedRecord[],
+  options: { dryRun?: boolean } = {},
+): Promise<number> {
+  if (previousEntries.length !== correctedEntries.length) {
+    throw new Error(`Reconciliation count mismatch: ${previousEntries.length} previous, ${correctedEntries.length} corrected`);
+  }
+
+  const previousBySource = new Map<string, PreparedRecord>();
+  const correctedBySource = new Map<string, PreparedRecord>();
+  const previousHashes = new Set<string>();
+  const correctedHashes = new Set<string>();
+  for (const entry of previousEntries) {
+    if (previousBySource.has(entry.sourceRef) || previousHashes.has(entry.fingerprint)) throw new Error(`Duplicate previous source identity: ${entry.sourceRef}`);
+    previousBySource.set(entry.sourceRef, entry);
+    previousHashes.add(entry.fingerprint);
+  }
+  for (const entry of correctedEntries) {
+    if (correctedBySource.has(entry.sourceRef) || correctedHashes.has(entry.fingerprint)) throw new Error(`Duplicate corrected source identity: ${entry.sourceRef}`);
+    correctedBySource.set(entry.sourceRef, entry);
+    correctedHashes.add(entry.fingerprint);
+  }
+  for (const sourceRef of previousBySource.keys()) {
+    if (!correctedBySource.has(sourceRef)) throw new Error(`Corrected artifact is missing ${sourceRef}`);
+  }
+
+  const foreignKeys = await db.execute("PRAGMA foreign_keys");
+  if (Number(foreignKeys.rows[0]?.foreign_keys ?? 0) !== 1) throw new Error("Foreign-key enforcement is disabled");
+  const categoryResult = await db.execute("SELECT id, slug, name FROM categories");
+  const categoryIds = buildCategoryMap(categoryResult.rows as unknown as CategoryRow[]);
+  const validationIssues = validateEntries(correctedEntries, categoryIds);
+  if (validationIssues.length > 0) throw new Error(`Corrected artifact validation failed for ${validationIssues[0].sourceRef}: ${validationIssues[0].reason}`);
+
+  const tx = await db.transaction("write");
+  let updated = 0;
+  try {
+    const sourceHashRows = await tx.execute("SELECT id, category_id, source_hash FROM tidbits WHERE source_hash IS NOT NULL");
+    if (sourceHashRows.rows.length !== previousEntries.length) {
+      throw new Error(`Expected ${previousEntries.length} source-identified rows, found ${sourceHashRows.rows.length}`);
+    }
+    const rowsByHash = new Map<string, ReconciliationRow>();
+    for (const row of sourceHashRows.rows) {
+      const sourceHash = String(row.source_hash);
+      if (rowsByHash.has(sourceHash)) throw new Error(`Duplicate database source hash: ${sourceHash.slice(0, 12)}`);
+      rowsByHash.set(sourceHash, { id: Number(row.id), categoryId: Number(row.category_id), sourceHash });
+    }
+
+    for (const previous of previousEntries) {
+      const corrected = correctedBySource.get(previous.sourceRef);
+      if (!corrected) throw new Error(`Corrected artifact is missing ${previous.sourceRef}`);
+      const row = rowsByHash.get(previous.fingerprint) ?? rowsByHash.get(corrected.fingerprint);
+      if (!row) throw new Error(`Database row missing for ${previous.sourceRef}`);
+      const categoryId = categoryIds.get(corrected.category.toLowerCase());
+      if (categoryId === undefined || categoryId !== row.categoryId) throw new Error(`Category mismatch for ${previous.sourceRef}`);
+      const collision = await tx.execute({ sql: "SELECT id FROM tidbits WHERE source_hash = ? AND id != ?", args: [corrected.fingerprint, row.id] });
+      if (collision.rows.length > 0) throw new Error(`Source hash collision for ${previous.sourceRef}`);
+      if (row.sourceHash === corrected.fingerprint) continue;
+      await tx.execute({
+        sql: "UPDATE tidbits SET header = ?, body = ?, source_hash = ? WHERE id = ? AND source_hash = ?",
+        args: [corrected.header, corrected.body, corrected.fingerprint, row.id, previous.fingerprint],
+      });
+      updated += 1;
+    }
+    if (options.dryRun) await tx.rollback();
+    else await tx.commit();
   } catch (error) {
     await tx.rollback();
     throw error;

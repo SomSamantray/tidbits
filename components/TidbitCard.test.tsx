@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import { cleanup, fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { describe, expect, it, vi, afterEach } from "vitest";
+import { cleanup, render, screen } from "@testing-library/react";
 import { TidbitCard } from "./TidbitCard";
 import type { Tidbit } from "@/lib/db/queries";
 
@@ -21,13 +21,6 @@ function makeTidbit(overrides: Partial<Tidbit> = {}): Tidbit {
     ...overrides,
   };
 }
-
-beforeEach(() => {
-  Object.defineProperty(window, "matchMedia", {
-    configurable: true,
-    value: vi.fn().mockReturnValue({ matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
-  });
-});
 
 afterEach(cleanup);
 
@@ -62,78 +55,15 @@ describe("TidbitCard", () => {
     expect(screen.getByRole("article").querySelector(".tidbit-category-badge")?.textContent).toBe("✨");
   });
 
-  it("keeps a short body natural and non-expandable", async () => {
-    render(<TidbitCard tidbit={makeTidbit({ body: "A short fact." })} />);
-
-    const bodyRegion = screen.getByRole("article").querySelector(".tidbit-card-body");
-    await waitFor(() => expect(bodyRegion?.getAttribute("data-collapsible")).toBe("false"));
-    expect(bodyRegion?.getAttribute("data-expanded")).toBeNull();
-    expect(screen.getByRole("article").querySelector(".read-more-hint")).toBeNull();
-  });
-
-  it("keeps a short body natural on mobile", async () => {
-    Object.defineProperty(window, "matchMedia", {
-      configurable: true,
-      value: vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
-    });
-    render(<TidbitCard tidbit={makeTidbit({ body: "A short fact." })} />);
-
-    const bodyRegion = screen.getByRole("article").querySelector(".tidbit-card-body");
-    await waitFor(() => expect(bodyRegion?.getAttribute("data-collapsible")).toBe("false"));
-    expect(bodyRegion?.getAttribute("data-expanded")).toBeNull();
-    expect(screen.getByRole("article").querySelector(".read-more-hint")).toBeNull();
-  });
-
-  it("is expanded on desktop and does not change on pointer movement", async () => {
+  it("renders the complete long body without expansion or clipping semantics", () => {
     render(<TidbitCard tidbit={makeTidbit()} />);
 
     const bodyRegion = screen.getByText(/a long body/i).closest(".tidbit-card-body");
     expect(bodyRegion).not.toBeNull();
-    await waitFor(() => expect(bodyRegion?.getAttribute("data-collapsible")).toBe("true"));
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("true");
-    expect(screen.getByRole("article").querySelector(".tidbit-body")?.classList.contains("tidbit-body")).toBe(true);
-
-    fireEvent.pointerEnter(bodyRegion!, { pointerType: "mouse" });
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("true");
-
-    fireEvent.pointerEnter(screen.getByRole("button", { name: /like this tidbit/i }), { pointerType: "mouse" });
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("true");
-
-    fireEvent.pointerLeave(screen.getByRole("article"), { pointerType: "mouse" });
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("true");
+    expect(bodyRegion?.getAttribute("role")).toBeNull();
+    expect(bodyRegion?.getAttribute("tabindex")).toBeNull();
+    expect(bodyRegion?.getAttribute("data-collapsible")).toBeNull();
+    expect(screen.getByText(/fully readable after the card is toggled/i)).toBeDefined();
     expect(screen.getByRole("article").querySelector(".read-more-hint")).toBeNull();
-  });
-
-  it("toggles a long body on body activation for mobile-sized interaction", async () => {
-    Object.defineProperty(window, "matchMedia", {
-      configurable: true,
-      value: vi.fn().mockReturnValue({ matches: true, addEventListener: vi.fn(), removeEventListener: vi.fn() }),
-    });
-    render(<TidbitCard tidbit={makeTidbit()} />);
-
-    const bodyRegion = screen.getByText(/a long body/i).closest(".tidbit-card-body");
-    await waitFor(() => expect(bodyRegion?.getAttribute("data-collapsible")).toBe("true"));
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("false");
-    fireEvent.click(bodyRegion!);
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("true");
-
-    fireEvent.click(bodyRegion!);
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("false");
-
-    fireEvent.keyDown(bodyRegion!, { key: "Enter" });
-    expect(bodyRegion?.getAttribute("data-expanded")).toBe("true");
-  });
-
-  it("does not toggle when an engagement control is activated", async () => {
-    render(<TidbitCard tidbit={makeTidbit()} />);
-
-    const bodyRegion = screen.getByRole("article").querySelector(".tidbit-card-body");
-    await waitFor(() => expect(bodyRegion?.getAttribute("data-collapsible")).toBe("true"));
-
-    const likeButton = screen.getByRole("button", { name: /like this tidbit/i });
-    fireEvent.click(likeButton);
-    fireEvent.keyDown(likeButton, { key: "Enter" });
-    fireEvent.keyDown(likeButton, { key: " " });
-    expect(screen.getByRole("article").querySelector(".tidbit-card-body")?.getAttribute("data-expanded")).toBe("true");
   });
 });

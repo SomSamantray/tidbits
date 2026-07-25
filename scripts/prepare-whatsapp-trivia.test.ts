@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { readFileSync } from "fs";
 import {
   classifyCategory,
   cleanHeader,
@@ -48,7 +49,7 @@ describe("WhatsApp trivia preparation", () => {
     expect(classifyCategory("The war", "A story about Nazi history.").slug).toBe("history");
   });
 
-  it("prepares a trivia message with a cleaned header and preserved body", () => {
+  it("prepares a trivia message with a cleaned header and preserves a displaced source lead", () => {
     const body = `${"First paragraph with enough detail to be treated as a substantive trivia message. ".repeat(4)}\n\nSecond paragraph.`;
     const prepared = prepareMessages([{
       sourceRef: "message-007",
@@ -59,7 +60,24 @@ describe("WhatsApp trivia preparation", () => {
     }]);
 
     expect(prepared.records).toHaveLength(1);
-    expect(prepared.records[0]).toMatchObject({ header: "KFC's Chicken Bucket Record", body });
+    expect(prepared.records[0]).toMatchObject({
+      header: "KFC's Chicken Bucket Record",
+      body: `The Guinness Record Holder who created the KFC Chicken Bucket!\n\n${body}`,
+    });
     expect(prepared.records[0].header.split(/\s+/u)).toHaveLength(4);
+  });
+
+  it("keeps the Nvidia tattoo lead and the ketchup conclusion in the prepared records", () => {
+    const source = parseWhatsAppExport(readFileSync("/Users/apple/Downloads/_chat.txt", "utf8"));
+    const prepared = prepareMessages(source).records;
+    const nvidia = prepared.find((record) => record.sourceRef === "message-082");
+    const ketchup = prepared.find((record) => record.sourceRef === "message-110");
+
+    expect(nvidia?.header).toBe("Jensen Huang's Nvidia Tattoo");
+    expect(nvidia?.body).toContain("tattoo");
+    expect(nvidia?.body).toContain("Nvidia");
+    expect(ketchup?.header).toBe("From Fish Sauce to Ketchup");
+    expect(ketchup?.body).toContain("tomato sauce");
+    expect(ketchup?.body).toContain("Heinz");
   });
 });
