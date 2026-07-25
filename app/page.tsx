@@ -38,7 +38,7 @@ export default async function Home({
       <SearchBar initialValue={searchTerm ?? ""} />
       <CategoryChips categories={categories} activeSlug={categorySlug} searchTerm={searchTerm} />
 
-      <main className="w-full max-w-[92rem]">
+      <main className="w-full max-w-[75rem]">
         {items.length === 0 && isFiltered && (
           <p className="text-center text-ink-soft">
             No tidbits match{searchTerm ? ` "${searchTerm}"` : " that filter"}.{" "}

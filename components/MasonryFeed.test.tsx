@@ -2,7 +2,6 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { MasonryFeed, RENDER_CAP } from "./MasonryFeed";
-import { packMasonry } from "@/lib/masonry";
 import type { Tidbit } from "@/lib/db/queries";
 
 function makeTidbit(overrides: Partial<Tidbit> = {}): Tidbit {
@@ -28,26 +27,26 @@ class FakeIntersectionObserver {
   disconnect() {}
 }
 
-class FakeResizeObserver {
-  observe() {}
-  unobserve() {}
-  disconnect() {}
-}
-
 beforeEach(() => {
   // jsdom has no IntersectionObserver; MasonryFeed only needs it not to throw.
   vi.stubGlobal("IntersectionObserver", FakeIntersectionObserver);
-  vi.stubGlobal("ResizeObserver", FakeResizeObserver);
   setViewportWidth(1280);
 });
 
 describe("MasonryFeed", () => {
-  it("renders every card in one stable source-order layout", () => {
-    const { container } = render(
-      <MasonryFeed initialItems={[makeTidbit(), makeTidbit(), makeTidbit(), makeTidbit()]} initialCursor={null} />,
-    );
-    expect(container.querySelectorAll(".masonry-layout").length).toBe(1);
-    expect(container.querySelectorAll(".masonry-item").length).toBe(4);
+  it("renders cards in one source-ordered stable grid without transforms", () => {
+    const { container } = render(<MasonryFeed initialItems={[
+      makeTidbit({ id: 1, header: "A" }),
+      makeTidbit({ id: 2, header: "B" }),
+      makeTidbit({ id: 3, header: "C" }),
+      makeTidbit({ id: 4, header: "D" }),
+    ]} initialCursor={null} />);
+    const grid = container.querySelector(".masonry-grid");
+    const items = [...container.querySelectorAll(".masonry-grid-item")];
+    expect(grid).not.toBeNull();
+    expect(items).toHaveLength(4);
+    expect(items.map((item) => item.textContent?.includes("A"))).toEqual([true, false, false, false]);
+    expect(items.every((item) => item.style.transform === "")).toBe(true);
     cleanup();
   });
 
@@ -68,22 +67,6 @@ describe("MasonryFeed", () => {
   it("shows a Load more button when more results are available and under the cap", () => {
     render(<MasonryFeed initialItems={[makeTidbit()]} initialCursor="some-cursor" />);
     expect(screen.getByText(/load more/i)).toBeDefined();
-    cleanup();
-  });
-
-  it("packs variable card heights into the shortest column", () => {
-    const result = packMasonry([
-      { key: "A", height: 300 },
-      { key: "B", height: 100 },
-      { key: "C", height: 100 },
-      { key: "D", height: 100 },
-    ], 3, 20);
-    expect(result.placements).toEqual([
-      { key: "A", column: 0, top: 0 },
-      { key: "B", column: 1, top: 0 },
-      { key: "C", column: 2, top: 0 },
-      { key: "D", column: 1, top: 120 },
-    ]);
     cleanup();
   });
 
