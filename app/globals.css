@@ -1,0 +1,79 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fff8ef;
+  --foreground: #2d2a26;
+  --foreground-soft: #6b6560;
+
+  /* Pastel accent rainbow — default palette categories pick from at seed time. */
+  --accent-coral: #ffadad;
+  --accent-peach: #ffd6a5;
+  --accent-butter: #fdffb6;
+  --accent-mint: #caffbf;
+  --accent-sky: #9bf6ff;
+  --accent-periwinkle: #a0c4ff;
+  --accent-lavender: #bdb2ff;
+  --accent-pink: #ffc6ff;
+}
+
+@theme inline {
+  --color-cream: var(--background);
+  --color-ink: var(--foreground);
+  --color-ink-soft: var(--foreground-soft);
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
+}
+
+h1,
+h2,
+h3,
+.font-display {
+  font-family: var(--font-display), var(--font-body), sans-serif;
+}
+
+/* Claymorphism card shell: set `--accent` inline per card/category. */
+.card-shell {
+  --accent: var(--accent, var(--accent-peach));
+  background: color-mix(in srgb, var(--accent) 14%, white);
+  border-radius: 1.25rem;
+  border: 2px solid color-mix(in srgb, var(--accent) 35%, white);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--accent) 50%, white) inset,
+    0 10px 24px -12px color-mix(in srgb, var(--accent) 70%, black 12%);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.card-shell:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 1px 0 color-mix(in srgb, var(--accent) 50%, white) inset,
+    0 16px 32px -12px color-mix(in srgb, var(--accent) 60%, black 16%);
+}
+
+/* Chunky pill chip, same accent-variable convention as card-shell. */
+.chip {
+  --accent: var(--accent, var(--accent-sky));
+  background: color-mix(in srgb, var(--accent) 20%, white);
+  border: 2px solid color-mix(in srgb, var(--accent) 45%, white);
+  color: color-mix(in srgb, var(--accent) 65%, var(--foreground) 60%);
+  transition:
+    transform 0.15s ease,
+    background 0.15s ease;
+}
+
+.chip[data-active="true"] {
+  background: var(--accent);
+  color: white;
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+}
