@@ -27,7 +27,11 @@
 }
 
 body {
-  background: var(--background);
+  background-color: var(--background);
+  background-image: url("/backgrounds/tidbits-doodle-wallpaper.png");
+  background-position: center top;
+  background-repeat: repeat;
+  background-size: 627px 627px;
   color: var(--foreground);
   font-family: var(--font-body), ui-sans-serif, system-ui, sans-serif;
 }
