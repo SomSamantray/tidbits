@@ -1,11 +1,11 @@
-import { getSiteUrl } from "@/lib/seo/site-url";
+import { getSiteUrl, SITE_NAME } from "@/lib/seo/site-url";
 
 export function SiteStructuredData() {
   const siteUrl = getSiteUrl().toString();
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "WebSite",
-    name: "Tidbits",
+    name: SITE_NAME,
     url: siteUrl,
   };
 

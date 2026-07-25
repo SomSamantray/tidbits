@@ -25,11 +25,14 @@ export function getSiteUrl(env: SiteUrlEnv = process.env): URL {
     throw new Error("NEXT_PUBLIC_SITE_URL must be a valid absolute URL.");
   }
 
-  if (siteUrl.protocol !== "https:" && !(env.NODE_ENV !== "production" && siteUrl.protocol === "http:")) {
+  const isLocalHttp = env.NODE_ENV !== "production" && siteUrl.protocol === "http:";
+  if (siteUrl.protocol !== "https:" && !isLocalHttp) {
     throw new Error("NEXT_PUBLIC_SITE_URL must use HTTPS outside local development.");
   }
 
-  if (siteUrl.username || siteUrl.password || siteUrl.search || siteUrl.hash || siteUrl.pathname !== "/") {
+  const hasUnsupportedParts =
+    siteUrl.username || siteUrl.password || siteUrl.search || siteUrl.hash || siteUrl.pathname !== "/";
+  if (hasUnsupportedParts) {
     throw new Error("NEXT_PUBLIC_SITE_URL must contain only the public origin, without a path or query string.");
   }
 
