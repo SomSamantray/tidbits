@@ -50,6 +50,21 @@ describe("EngagementButtons — like", () => {
 
     await waitFor(() => expect(screen.getByText("5")).toBeDefined());
     expect(screen.getByLabelText(/like this tidbit/i)).toBeDefined();
+    expect(screen.getByText(/couldn't like this tidbit/i)).toBeDefined();
+  });
+
+  it("does not send duplicate like requests while the first request is pending", async () => {
+    let resolveLike: ((value: { incremented: boolean; likeCount: number }) => void) | undefined;
+    likeMock.mockImplementation(() => new Promise((resolve) => { resolveLike = resolve; }));
+    render(<EngagementButtons tidbitId={1} header="H" initialLikeCount={0} initialShareCount={0} />);
+
+    const button = screen.getByLabelText(/like this tidbit/i);
+    fireEvent.click(button);
+    fireEvent.click(button);
+    expect(likeMock).toHaveBeenCalledTimes(1);
+
+    resolveLike?.({ incremented: true, likeCount: 1 });
+    await waitFor(() => expect(screen.getByText("1")).toBeDefined());
   });
 });
 

@@ -17,12 +17,14 @@ export function EngagementButtons({
 }) {
   const [likeCount, setLikeCount] = useState(initialLikeCount);
   const [liked, setLiked] = useState(false);
+  const [likePending, setLikePending] = useState(false);
   const [animating, setAnimating] = useState(false);
   const [shareCount, setShareCount] = useState(initialShareCount);
   const [toast, setToast] = useState<string | null>(null);
 
   async function handleLike() {
-    if (liked) return; // already liked this session; server would no-op anyway
+    if (liked || likePending) return; // protect both the session and the in-flight request
+    setLikePending(true);
     setLiked(true);
     setLikeCount((n) => n + 1);
     setAnimating(true);
@@ -34,6 +36,10 @@ export function EngagementButtons({
     } catch {
       setLiked(false);
       setLikeCount((n) => n - 1);
+      setToast("Couldn't like this tidbit. Try again.");
+      setTimeout(() => setToast(null), 3000);
+    } finally {
+      setLikePending(false);
     }
   }
 
@@ -72,6 +78,7 @@ export function EngagementButtons({
       <button
         type="button"
         onClick={handleLike}
+        disabled={likePending}
         aria-pressed={liked}
         aria-label={liked ? "Liked" : "Like this tidbit"}
         className="flex items-center gap-1 disabled:opacity-70"
