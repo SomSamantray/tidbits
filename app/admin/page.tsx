@@ -1,8 +1,17 @@
+import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { ADMIN_SESSION_COOKIE, isValidSessionToken } from "@/lib/auth/session";
 import { listCategories } from "@/lib/db/queries";
 import { LoginForm } from "./LoginForm";
 import { AddTidbitForm } from "./AddTidbitForm";
+
+export const metadata: Metadata = {
+  title: "Admin",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default async function AdminPage() {
   const cookieStore = await cookies();
