@@ -59,7 +59,7 @@ export function AddTidbitForm({ categories }: { categories: Category[] }) {
         </label>
 
         {state.error && <p className="text-sm text-red-600">{state.error}</p>}
-        {state.success && <p className="text-sm text-green-700">Added! It's live on the feed.</p>}
+        {state.success && <p className="text-sm text-green-700">Added! It&apos;s live on the feed.</p>}
 
         <button
           type="submit"

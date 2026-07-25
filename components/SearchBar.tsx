@@ -1,19 +1,25 @@
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 const DEBOUNCE_MS = 350;
 
 export function SearchBar({ initialValue }: { initialValue: string }) {
   const [value, setValue] = useState(initialValue);
+  // Adjust state during render (React's documented escape hatch) rather than
+  // in an effect: keeps the box in sync when the URL's `q` changes from
+  // outside this component (e.g. back/forward navigation) without an extra
+  // render pass.
+  const [prevInitialValue, setPrevInitialValue] = useState(initialValue);
+  if (initialValue !== prevInitialValue) {
+    setPrevInitialValue(initialValue);
+    setValue(initialValue);
+  }
+
   const router = useRouter();
   const searchParams = useSearchParams();
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    setValue(initialValue);
-  }, [initialValue]);
 
   function navigate(term: string) {
     const params = new URLSearchParams(searchParams.toString());

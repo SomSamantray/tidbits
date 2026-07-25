@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getFeedPage, listCategories } from "@/lib/db/queries";
 import { MasonryFeed } from "@/components/MasonryFeed";
 import { CategoryChips } from "@/components/CategoryChips";
@@ -39,9 +40,9 @@ export default async function Home({
         {items.length === 0 && isFiltered && (
           <p className="text-center text-ink-soft">
             No tidbits match{searchTerm ? ` "${searchTerm}"` : " that filter"}.{" "}
-            <a href="/" className="underline">
+            <Link href="/" className="underline">
               Clear search &amp; filters
-            </a>
+            </Link>
           </p>
         )}
         {items.length === 0 && !isFiltered && (

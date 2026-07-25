@@ -29,13 +29,9 @@ export function MasonryFeed({
   const [loadError, setLoadError] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
-  // A new filter/search re-renders this component with fresh initial props
-  // (see U6's key-based remount); sync local state to match.
-  useEffect(() => {
-    setItems(initialItems);
-    setCursor(initialCursor);
-    setLoadError(false);
-  }, [initialItems, initialCursor]);
+  // No prop-sync effect needed: page.tsx keys MasonryFeed by
+  // `${category}-${search}`, so a filter change remounts this component
+  // fresh rather than updating props on the same instance.
 
   const loadMore = useCallback(async () => {
     if (loading || !cursor || items.length >= RENDER_CAP) return;
