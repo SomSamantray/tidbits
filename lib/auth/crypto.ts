@@ -2,11 +2,14 @@ import { createHmac, timingSafeEqual } from "crypto";
 
 export function getCookieSecret(): string {
   const secret = process.env.COOKIE_SECRET;
-  if (secret) return secret;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("COOKIE_SECRET must be set in production.");
+  if (!secret) {
+    // Fail fast unconditionally, not just in NODE_ENV==="production" — many
+    // real deployments (custom Node servers, Docker, non-Vercel PaaS) never
+    // set that literal string, and a silent insecure fallback there would
+    // let anyone forge both the admin-session and anon-id cookies.
+    throw new Error("COOKIE_SECRET must be set (see .env.local.example).");
   }
-  return "dev-only-insecure-secret";
+  return secret;
 }
 
 export function signValue(value: string): string {

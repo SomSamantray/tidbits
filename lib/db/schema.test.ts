@@ -29,18 +29,18 @@ describe("tidbits schema", () => {
     await seedTidbit(db, historyId, { header: "History fact", createdAt: 2000 });
 
     const firstPage = await db.execute({
-      sql: `SELECT id, created_at FROM tidbits
+      sql: `SELECT id, category_id, created_at FROM tidbits
             WHERE category_id = ?
             ORDER BY created_at DESC, id DESC
             LIMIT 3`,
       args: [scienceId],
     });
     expect(firstPage.rows).toHaveLength(3);
-    expect(firstPage.rows.every((r) => Number(r.category_id ?? scienceId) === scienceId));
+    expect(firstPage.rows.every((r) => Number(r.category_id) === scienceId)).toBe(true);
 
     const cursor = firstPage.rows[firstPage.rows.length - 1];
     const secondPage = await db.execute({
-      sql: `SELECT id, created_at FROM tidbits
+      sql: `SELECT id, category_id, created_at FROM tidbits
             WHERE category_id = ?
               AND (created_at, id) < (?, ?)
             ORDER BY created_at DESC, id DESC
