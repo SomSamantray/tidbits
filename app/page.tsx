@@ -5,6 +5,7 @@ import { CategoryChips } from "@/components/CategoryChips";
 import { SearchBar } from "@/components/SearchBar";
 import { TopBar } from "@/components/TopBar";
 import { BackToTopButton } from "@/components/BackToTopButton";
+import { SiteStructuredData } from "@/components/SiteStructuredData";
 
 // KTD5: read per request, never prerendered — likes/shares and new tidbits
 // must always be fresh, and there's no cache layer to invalidate.
@@ -27,7 +28,9 @@ export default async function Home({
   const isFiltered = Boolean(categorySlug || searchTerm);
 
   return (
-    <div className="feed-shell flex flex-1 flex-col items-center px-3 py-5 sm:px-4 lg:px-6">
+    <>
+      <SiteStructuredData />
+      <div className="feed-shell flex flex-1 flex-col items-center px-3 py-5 sm:px-4 lg:px-6">
       <TopBar />
       <header className="mb-8 mt-10 flex max-w-xl flex-col items-center gap-2 text-center">
         <h1 className="font-display text-4xl font-semibold text-ink sm:text-5xl">Tidbits</h1>
@@ -64,6 +67,7 @@ export default async function Home({
         )}
       </main>
       <BackToTopButton />
-    </div>
+      </div>
+    </>
   );
 }
