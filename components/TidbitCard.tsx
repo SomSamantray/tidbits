@@ -1,8 +1,5 @@
 import type { Tidbit } from "@/lib/db/queries";
-
-function formatCompact(n: number): string {
-  return new Intl.NumberFormat("en-US", { notation: "compact" }).format(n);
-}
+import { EngagementButtons } from "./EngagementButtons";
 
 export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
   return (
@@ -19,10 +16,12 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
       <h2 className="font-display text-lg font-semibold text-ink">{tidbit.header}</h2>
       <p className="text-sm leading-relaxed text-ink-soft">{tidbit.body}</p>
 
-      <div className="mt-1 flex items-center gap-4 text-sm text-ink-soft">
-        <span aria-label={`${tidbit.likeCount} likes`}>❤️ {formatCompact(tidbit.likeCount)}</span>
-        <span aria-label={`${tidbit.shareCount} shares`}>🔗 {formatCompact(tidbit.shareCount)}</span>
-      </div>
+      <EngagementButtons
+        tidbitId={tidbit.id}
+        header={tidbit.header}
+        initialLikeCount={tidbit.likeCount}
+        initialShareCount={tidbit.shareCount}
+      />
     </article>
   );
 }

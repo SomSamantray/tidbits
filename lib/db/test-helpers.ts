@@ -1,10 +1,19 @@
 import { createClient, type Client } from "@libsql/client";
 import { readFileSync } from "fs";
+import { randomUUID } from "crypto";
 import path from "path";
+import os from "os";
 
-/** Fresh in-memory libSQL DB with the schema applied, for isolated tests. */
+/**
+ * Fresh libSQL DB with the schema applied, for isolated tests. Uses a unique
+ * temp file rather than `:memory:` — interactive transactions (db.transaction())
+ * open a separate connection under the hood, and a `:memory:` database is not
+ * shared across connections, so a second transaction on the same "db" would
+ * otherwise see an empty database.
+ */
 export async function createTestDb(): Promise<Client> {
-  const db = createClient({ url: ":memory:" });
+  const dbPath = path.join(os.tmpdir(), `tidbits-test-${randomUUID()}.db`);
+  const db = createClient({ url: `file:${dbPath}` });
   const schema = readFileSync(
     path.join(__dirname, "schema.sql"),
     "utf8",

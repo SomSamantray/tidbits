@@ -29,6 +29,57 @@ export async function insertTidbit(
   return Number(result.rows[0].id);
 }
 
+/**
+ * KTD3: the interactions insert and the counter increment happen inside one
+ * transaction so a mid-flight failure can never leave the visitor permanently
+ * marked "already liked" with the counter un-incremented (or vice versa).
+ * `incremented: false` means this call was a no-op (already liked before).
+ */
+export async function likeTidbit(
+  tidbitId: number,
+  anonId: string,
+  db: Client = getDb(),
+): Promise<{ incremented: boolean; likeCount: number }> {
+  const tx = await db.transaction("write");
+  try {
+    const insertResult = await tx.execute({
+      sql: "INSERT INTO interactions (tidbit_id, anon_id) VALUES (?, ?) ON CONFLICT DO NOTHING RETURNING tidbit_id",
+      args: [tidbitId, anonId],
+    });
+    const incremented = insertResult.rows.length > 0;
+
+    if (incremented) {
+      await tx.execute({
+        sql: "UPDATE tidbits SET like_count = like_count + 1 WHERE id = ?",
+        args: [tidbitId],
+      });
+    }
+
+    const countResult = await tx.execute({
+      sql: "SELECT like_count FROM tidbits WHERE id = ?",
+      args: [tidbitId],
+    });
+    await tx.commit();
+
+    return { incremented, likeCount: Number(countResult.rows[0]?.like_count ?? 0) };
+  } catch (error) {
+    await tx.rollback();
+    throw error;
+  }
+}
+
+/** Shares are uncapped (R9) — always increments directly, no dedup. */
+export async function shareTidbit(
+  tidbitId: number,
+  db: Client = getDb(),
+): Promise<{ shareCount: number }> {
+  const result = await db.execute({
+    sql: "UPDATE tidbits SET share_count = share_count + 1 WHERE id = ? RETURNING share_count",
+    args: [tidbitId],
+  });
+  return { shareCount: Number(result.rows[0]?.share_count ?? 0) };
+}
+
 export type Tidbit = {
   id: number;
   header: string;
