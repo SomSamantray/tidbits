@@ -1,19 +1,26 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
-import Masonry from "react-masonry-css";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { TidbitCard } from "./TidbitCard";
 import type { Tidbit } from "@/lib/db/queries";
 import { accentStyle } from "@/lib/design/palette";
 import { SkeletonCard } from "./SkeletonCard";
+import { packMasonry, type MasonryPlacement } from "@/lib/masonry";
 
-// react-masonry-css distributes children round-robin (item i -> column i % N),
-// preserving each column's relative order — the "column-major" reading order
-// R4 settles for, since a single global chronological DOM order isn't
-// achievable with this library.
 export const RENDER_CAP = 500;
 export const BREAKPOINTS = { default: 3, 1024: 2, 640: 1 };
 const SKELETON_COUNT = 6;
+const MASONRY_GAP = 20;
+
+function columnCountForWidth(width: number) {
+  if (width <= 640) return 1;
+  if (width <= 1024) return 2;
+  return 3;
+}
+
+function estimateHeight(bodyLength: number) {
+  return Math.max(190, Math.min(280, 176 + bodyLength * 0.28));
+}
 
 export function MasonryFeed({
   initialItems,
@@ -32,6 +39,11 @@ export function MasonryFeed({
   const [loadError, setLoadError] = useState(false);
   const loadingRef = useRef(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
+  const layoutRef = useRef<HTMLDivElement>(null);
+  const cardRefs = useRef(new Map<string, HTMLDivElement>());
+  const [containerWidth, setContainerWidth] = useState(0);
+  const [placements, setPlacements] = useState<MasonryPlacement[]>([]);
+  const [layoutHeight, setLayoutHeight] = useState(0);
 
   // No prop-sync effect needed: page.tsx keys MasonryFeed by
   // `${category}-${search}`, so a filter change remounts this component
@@ -71,21 +83,80 @@ export function MasonryFeed({
     return () => observer.disconnect();
   }, [loadMore]);
 
+  const getLayoutEntries = useCallback(() => [
+    ...items.map((tidbit) => ({ key: `tidbit-${tidbit.id}`, height: cardRefs.current.get(`tidbit-${tidbit.id}`)?.getBoundingClientRect().height ?? estimateHeight(tidbit.body.length) })),
+    ...(loading ? Array.from({ length: SKELETON_COUNT }, (_, index) => ({ key: `skeleton-${index}`, height: 192 })) : []),
+  ], [items, loading]);
+
+  useLayoutEffect(() => {
+    const layout = layoutRef.current;
+    if (!layout) return;
+    if (typeof ResizeObserver === "undefined") return;
+    const resizeObserver = new ResizeObserver(() => {
+      setContainerWidth(layout.clientWidth);
+    });
+    resizeObserver.observe(layout);
+    setContainerWidth(layout.clientWidth);
+    return () => resizeObserver.disconnect();
+  }, []);
+
+  const recalculateLayout = useCallback(() => {
+    if (!containerWidth) return;
+    const result = packMasonry(getLayoutEntries(), columnCountForWidth(containerWidth), MASONRY_GAP);
+    setPlacements(result.placements);
+    setLayoutHeight(result.height);
+  }, [containerWidth, getLayoutEntries]);
+
+  useLayoutEffect(() => {
+    const frame = requestAnimationFrame(recalculateLayout);
+    if (typeof ResizeObserver === "undefined") return;
+    const resizeObserver = new ResizeObserver(() => recalculateLayout());
+    for (const element of cardRefs.current.values()) resizeObserver.observe(element);
+    return () => {
+      cancelAnimationFrame(frame);
+      resizeObserver.disconnect();
+    };
+  }, [recalculateLayout, getLayoutEntries]);
+
+  const placementByKey = new Map(placements.map((placement) => [placement.key, placement]));
+  const columnCount = columnCountForWidth(containerWidth);
+  const columnWidth = containerWidth ? (containerWidth - MASONRY_GAP * (columnCount - 1)) / columnCount : 0;
+
   const atCap = items.length >= RENDER_CAP;
   const atEnd = !cursor && !loading && items.length > 0;
 
   return (
     <div>
-      <Masonry
-        breakpointCols={BREAKPOINTS}
-        className="flex w-auto -ml-5"
-        columnClassName="pl-5 bg-clip-padding"
-      >
+      <div ref={layoutRef} className="masonry-layout" style={{ height: layoutHeight }}>
         {items.map((tidbit) => (
-          <TidbitCard key={tidbit.id} tidbit={tidbit} />
+          <div
+            key={tidbit.id}
+            ref={(element) => {
+              if (element) cardRefs.current.set(`tidbit-${tidbit.id}`, element);
+              else cardRefs.current.delete(`tidbit-${tidbit.id}`);
+            }}
+            className="masonry-item"
+            style={(() => {
+              const placement = placementByKey.get(`tidbit-${tidbit.id}`);
+              return placement ? { width: columnWidth, transform: `translate3d(${placement.column * (columnWidth + MASONRY_GAP)}px, ${placement.top}px, 0)` } : { width: columnWidth };
+            })()}
+          >
+            <TidbitCard tidbit={tidbit} />
+          </div>
         ))}
-        {loading && Array.from({ length: SKELETON_COUNT }, (_, index) => <SkeletonCard key={`skeleton-${index}`} />)}
-      </Masonry>
+        {loading && Array.from({ length: SKELETON_COUNT }, (_, index) => {
+          const placement = placementByKey.get(`skeleton-${index}`);
+          return (
+            <div
+              key={`skeleton-${index}`}
+              className="masonry-item"
+              style={placement ? { width: columnWidth, transform: `translate3d(${placement.column * (columnWidth + MASONRY_GAP)}px, ${placement.top}px, 0)` } : { width: columnWidth }}
+            >
+              <SkeletonCard />
+            </div>
+          );
+        })}
+      </div>
 
       <div ref={sentinelRef} className="h-1" />
 

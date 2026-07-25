@@ -5,6 +5,15 @@ import type { Tidbit } from "@/lib/db/queries";
 import { accentStyle } from "@/lib/design/palette";
 import { EngagementButtons } from "./EngagementButtons";
 
+const CATEGORY_ICONS: Record<string, string> = {
+  animals: "🐾",
+  food: "🍽️",
+  history: "🏛️",
+  science: "🔬",
+  space: "🚀",
+  random: "✨",
+};
+
 export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
   const [expanded, setExpanded] = useState(false);
 
@@ -21,13 +30,23 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
   }
 
   return (
-    <article className="card-shell tidbit-card mb-5 flex flex-col gap-3 p-5" style={accentStyle(tidbit.category.accentColor)}>
+    <article className="card-shell tidbit-card p-5" style={accentStyle(tidbit.category.accentColor)}>
       <span
-        className="chip inline-block w-fit rounded-full px-3 py-1 text-xs font-semibold"
+        className="tidbit-category-meta text-sm font-bold"
         style={accentStyle(tidbit.category.accentColor)}
       >
-        {tidbit.category.name}
+        <span aria-hidden="true">{CATEGORY_ICONS[tidbit.category.slug] ?? "✨"}</span>
+        <span>{tidbit.category.name}</span>
       </span>
+      <div className="engagement-slab">
+        <EngagementButtons
+          tidbitId={tidbit.id}
+          header={tidbit.header}
+          body={tidbit.body}
+          initialLikeCount={tidbit.likeCount}
+          initialShareCount={tidbit.shareCount}
+        />
+      </div>
       <div
         className="tidbit-card-body"
         role="button"
@@ -46,15 +65,6 @@ export function TidbitCard({ tidbit }: { tidbit: Tidbit }) {
         <span id={`tidbit-state-${tidbit.id}`} className="sr-only">
           {expanded ? "Tidbit expanded" : "Tidbit collapsed; activate to read the full tidbit"}
         </span>
-      </div>
-
-      <div className="engagement-slab">
-        <EngagementButtons
-          tidbitId={tidbit.id}
-          header={tidbit.header}
-          initialLikeCount={tidbit.likeCount}
-          initialShareCount={tidbit.shareCount}
-        />
       </div>
     </article>
   );

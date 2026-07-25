@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { AboutModal } from "./AboutModal";
+import { ThemeToggle } from "./ThemeToggle";
 
 export function TopBar() {
   const [aboutOpen, setAboutOpen] = useState(false);
@@ -20,10 +21,7 @@ export function TopBar() {
           >
             About
           </button>
-          <span className="theme-indicator" title="Theme follows your device" aria-label="Theme follows your device">
-            <span className="theme-sun" aria-hidden="true">☼</span>
-            <span className="theme-moon" aria-hidden="true">☾</span>
-          </span>
+          <ThemeToggle />
         </div>
       </nav>
       {aboutOpen && <AboutModal onClose={() => setAboutOpen(false)} />}

@@ -41,7 +41,7 @@ body {
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme]) {
     --background: #101a31;
     --foreground: #f7f0e8;
     --foreground-soft: #c5c0c5;
@@ -59,9 +59,31 @@ body {
     --accent-pink: #cf9bc7;
   }
 
-  body {
+  :root:not([data-theme]) body {
     background-image: url("/backgrounds/tidbits-doodle-wallpaper-dark.png");
   }
+}
+
+:root[data-theme="dark"] {
+  --background: #101a31;
+  --foreground: #f7f0e8;
+  --foreground-soft: #c5c0c5;
+  --surface: #1c2943;
+  --surface-muted: #243452;
+  --border: rgba(239, 230, 218, 0.2);
+  --backdrop: rgba(3, 8, 18, 0.72);
+  --accent-coral: #d88992;
+  --accent-peach: #d8a66f;
+  --accent-butter: #d2c878;
+  --accent-mint: #86b985;
+  --accent-sky: #72bcc9;
+  --accent-periwinkle: #849dd1;
+  --accent-lavender: #a497cf;
+  --accent-pink: #cf9bc7;
+}
+
+:root[data-theme="dark"] body {
+  background-image: url("/backgrounds/tidbits-doodle-wallpaper-dark.png");
 }
 
 h1,
@@ -83,9 +105,86 @@ h3,
   transition:
     transform 0.2s ease,
     box-shadow 0.2s ease;
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.85rem 1rem;
+}
+
+.masonry-layout {
+  position: relative;
+  width: 100%;
+}
+
+.masonry-item {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transition: transform 0.35s ease;
+}
+
+.tidbit-category-meta {
+  grid-column: 1;
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  gap: 0.45rem;
+  color: var(--foreground-soft);
+}
+
+.engagement-slab,
+.engagement-buttons {
+  display: contents;
+}
+
+.like-action {
+  grid-column: 2;
+  grid-row: 1;
+  align-self: center;
+  justify-self: end;
+  color: var(--foreground-soft);
+  font-weight: 800;
+}
+
+.share-action {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  justify-self: start;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  color: var(--foreground-soft);
+  font-weight: 800;
+}
+
+.engagement-toast {
+  position: absolute;
+  right: 1.25rem;
+  bottom: 3rem;
+  z-index: 3;
+}
+
+.theme-toggle {
+  display: inline-grid;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--surface) 88%, transparent);
+  cursor: pointer;
+  font-size: 1.25rem;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  background: var(--surface);
 }
 
 .tidbit-card-body {
+  grid-column: 1 / -1;
+  grid-row: 2;
   cursor: pointer;
   outline: none;
   border-radius: 0.75rem;
@@ -94,6 +193,13 @@ h3,
 .tidbit-card-body:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--accent-sky) 70%, var(--foreground));
   outline-offset: 4px;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .tidbit-card-body:hover .read-more-hint,
+  .tidbit-card-body:focus-within .read-more-hint {
+    display: none;
+  }
 }
 
 .tidbit-copy-window {
@@ -155,7 +261,7 @@ h3,
 .card-shell:hover {
   transform: translateY(-4px);
   box-shadow:
-    0 1px 0 color-mix(in srgb, var(--accent) 50%, white) inset,
+    0 1px 0 color-mix(in srgb, var(--accent) 50%, var(--surface)) inset,
     0 16px 32px -12px color-mix(in srgb, var(--accent) 60%, black 16%);
 }
 
@@ -255,8 +361,7 @@ h3,
   backdrop-filter: blur(14px);
 }
 
-.top-bar-link,
-.theme-indicator {
+.top-bar-link {
   color: var(--foreground);
 }
 
@@ -271,30 +376,6 @@ h3,
 .top-bar-link:focus-visible {
   background: var(--surface-muted);
   outline: none;
-}
-
-.theme-indicator {
-  display: inline-flex;
-  min-width: 2.3rem;
-  justify-content: center;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 0.35rem 0.5rem;
-  font-size: 1.1rem;
-}
-
-.theme-moon {
-  display: none;
-}
-
-@media (prefers-color-scheme: dark) {
-  .theme-sun {
-    display: none;
-  }
-
-  .theme-moon {
-    display: inline;
-  }
 }
 
 .modal-backdrop {

@@ -7,11 +7,13 @@ import { formatCompact } from "@/lib/format";
 export function EngagementButtons({
   tidbitId,
   header,
+  body,
   initialLikeCount,
   initialShareCount,
 }: {
   tidbitId: number;
   header: string;
+  body: string;
   initialLikeCount: number;
   initialShareCount: number;
 }) {
@@ -44,7 +46,10 @@ export function EngagementButtons({
   }
 
   async function handleShare() {
-    const shareData = { title: "Tidbits", text: header, url: typeof window !== "undefined" ? window.location.href : undefined };
+    const url = typeof window !== "undefined" ? window.location.href : undefined;
+    const shareText = `${header}\n\n${body}`;
+    const clipboardText = url ? `${shareText}\n\nRead more: ${url}` : shareText;
+    const shareData = { title: header, text: shareText, url };
 
     if (typeof navigator !== "undefined" && navigator.share) {
       try {
@@ -54,8 +59,8 @@ export function EngagementButtons({
       }
     } else if (typeof navigator !== "undefined" && navigator.clipboard) {
       try {
-        await navigator.clipboard.writeText(shareData.url ?? header);
-        setToast("Link copied!");
+        await navigator.clipboard.writeText(clipboardText);
+        setToast("Tidbit copied!");
         setTimeout(() => setToast(null), 2000);
       } catch {
         return;
@@ -74,24 +79,24 @@ export function EngagementButtons({
   }
 
   return (
-    <div className="relative mt-1 flex items-center gap-4 text-sm text-ink-soft">
+    <div className="engagement-buttons text-sm text-ink-soft">
       <button
         type="button"
         onClick={handleLike}
         disabled={likePending}
         aria-pressed={liked}
         aria-label={liked ? "Liked" : "Like this tidbit"}
-        className="flex items-center gap-1 disabled:opacity-70"
+        className="like-action flex items-center gap-1 disabled:opacity-70"
       >
         <span className={animating ? "heart-pop" : undefined}>{liked ? "❤️" : "🤍"}</span>
         {formatCompact(likeCount)}
       </button>
-      <button type="button" onClick={handleShare} aria-label="Share this tidbit" className="flex items-center gap-1">
+      <button type="button" onClick={handleShare} aria-label="Share this tidbit" className="share-action flex items-center gap-1">
         <span>🔗</span>
         {formatCompact(shareCount)}
       </button>
       {toast && (
-        <span className="absolute -top-8 left-0 rounded-full bg-ink px-3 py-1 text-xs text-cream">
+        <span className="engagement-toast rounded-full bg-ink px-3 py-1 text-xs text-cream">
           {toast}
         </span>
       )}

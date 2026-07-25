@@ -21,7 +21,7 @@ afterEach(cleanup);
 describe("EngagementButtons — like", () => {
   it("optimistically increments and calls the like action on first click", async () => {
     likeMock.mockResolvedValue({ incremented: true, likeCount: 1 });
-    render(<EngagementButtons tidbitId={1} header="H" initialLikeCount={0} initialShareCount={0} />);
+    render(<EngagementButtons tidbitId={1} header="H" body="Body" initialLikeCount={0} initialShareCount={0} />);
 
     fireEvent.click(screen.getByLabelText(/like this tidbit/i));
 
@@ -31,7 +31,7 @@ describe("EngagementButtons — like", () => {
 
   it("does not call the like action again on a second click (already liked this session)", async () => {
     likeMock.mockResolvedValue({ incremented: true, likeCount: 1 });
-    render(<EngagementButtons tidbitId={1} header="H" initialLikeCount={0} initialShareCount={0} />);
+    render(<EngagementButtons tidbitId={1} header="H" body="Body" initialLikeCount={0} initialShareCount={0} />);
 
     const button = screen.getByLabelText(/like this tidbit/i);
     fireEvent.click(button);
@@ -43,7 +43,7 @@ describe("EngagementButtons — like", () => {
 
   it("reverts the optimistic count when the like action fails", async () => {
     likeMock.mockRejectedValue(new Error("network error"));
-    render(<EngagementButtons tidbitId={1} header="H" initialLikeCount={5} initialShareCount={0} />);
+    render(<EngagementButtons tidbitId={1} header="H" body="Body" initialLikeCount={5} initialShareCount={0} />);
 
     fireEvent.click(screen.getByLabelText(/like this tidbit/i));
     expect(screen.getByText("6")).toBeDefined();
@@ -56,7 +56,7 @@ describe("EngagementButtons — like", () => {
   it("does not send duplicate like requests while the first request is pending", async () => {
     let resolveLike: ((value: { incremented: boolean; likeCount: number }) => void) | undefined;
     likeMock.mockImplementation(() => new Promise((resolve) => { resolveLike = resolve; }));
-    render(<EngagementButtons tidbitId={1} header="H" initialLikeCount={0} initialShareCount={0} />);
+    render(<EngagementButtons tidbitId={1} header="H" body="Body" initialLikeCount={0} initialShareCount={0} />);
 
     const button = screen.getByLabelText(/like this tidbit/i);
     fireEvent.click(button);
@@ -77,11 +77,24 @@ describe("EngagementButtons — share", () => {
       configurable: true,
     });
 
-    render(<EngagementButtons tidbitId={1} header="H" initialLikeCount={0} initialShareCount={2} />);
+    render(<EngagementButtons tidbitId={1} header="H" body="Body" initialLikeCount={0} initialShareCount={2} />);
     fireEvent.click(screen.getByLabelText(/share this tidbit/i));
 
     await waitFor(() => expect(screen.getByText("3")).toBeDefined());
     expect(shareMock).toHaveBeenCalledWith(1);
+  });
+
+  it("copies the complete header, body, and URL in the clipboard fallback", async () => {
+    const writeText = vi.fn().mockResolvedValue(undefined);
+    shareMock.mockResolvedValue({ shareCount: 3 });
+    Object.defineProperty(navigator, "share", { value: undefined, configurable: true });
+    Object.defineProperty(navigator, "clipboard", { value: { writeText }, configurable: true });
+    Object.defineProperty(window, "location", { configurable: true, value: { href: "http://localhost:3000/?category=science" } });
+
+    render(<EngagementButtons tidbitId={1} header="A Header" body="The full body." initialLikeCount={0} initialShareCount={2} />);
+    fireEvent.click(screen.getByLabelText(/share this tidbit/i));
+
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith("A Header\n\nThe full body.\n\nRead more: http://localhost:3000/?category=science"));
   });
 
   it("increments again on a second share (not deduplicated)", async () => {
@@ -92,7 +105,7 @@ describe("EngagementButtons — share", () => {
       configurable: true,
     });
 
-    render(<EngagementButtons tidbitId={1} header="H" initialLikeCount={0} initialShareCount={2} />);
+    render(<EngagementButtons tidbitId={1} header="H" body="Body" initialLikeCount={0} initialShareCount={2} />);
     const button = screen.getByLabelText(/share this tidbit/i);
     fireEvent.click(button);
     await waitFor(() => expect(screen.getByText("3")).toBeDefined());

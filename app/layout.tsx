@@ -26,7 +26,14 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${fredoka.variable} ${nunito.variable} h-full`}>
+    <html lang="en" suppressHydrationWarning className={`${fredoka.variable} ${nunito.variable} h-full`}>
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(() => { try { const theme = localStorage.getItem("tidbits-theme"); if (theme === "light" || theme === "dark") document.documentElement.dataset.theme = theme; } catch {} })()`,
+          }}
+        />
+      </head>
       <body className="min-h-full flex flex-col bg-cream text-ink antialiased">
         {children}
       </body>

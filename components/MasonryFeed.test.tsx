@@ -2,6 +2,7 @@
 import { describe, expect, it, vi, beforeEach } from "vitest";
 import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { MasonryFeed, RENDER_CAP } from "./MasonryFeed";
+import { packMasonry } from "@/lib/masonry";
 import type { Tidbit } from "@/lib/db/queries";
 
 function makeTidbit(overrides: Partial<Tidbit> = {}): Tidbit {
@@ -27,35 +28,26 @@ class FakeIntersectionObserver {
   disconnect() {}
 }
 
+class FakeResizeObserver {
+  observe() {}
+  unobserve() {}
+  disconnect() {}
+}
+
 beforeEach(() => {
   // jsdom has no IntersectionObserver; MasonryFeed only needs it not to throw.
   vi.stubGlobal("IntersectionObserver", FakeIntersectionObserver);
+  vi.stubGlobal("ResizeObserver", FakeResizeObserver);
   setViewportWidth(1280);
 });
 
 describe("MasonryFeed", () => {
-  it("renders 3 columns at desktop width", () => {
-    setViewportWidth(1280);
+  it("renders every card in one stable source-order layout", () => {
     const { container } = render(
       <MasonryFeed initialItems={[makeTidbit(), makeTidbit(), makeTidbit(), makeTidbit()]} initialCursor={null} />,
     );
-    expect(container.querySelectorAll(".pl-5").length).toBe(3);
-    cleanup();
-  });
-
-  it("renders 2 columns at tablet width", () => {
-    setViewportWidth(800);
-    const { container } = render(
-      <MasonryFeed initialItems={[makeTidbit(), makeTidbit(), makeTidbit()]} initialCursor={null} />,
-    );
-    expect(container.querySelectorAll(".pl-5").length).toBe(2);
-    cleanup();
-  });
-
-  it("renders 1 column at mobile width", () => {
-    setViewportWidth(400);
-    const { container } = render(<MasonryFeed initialItems={[makeTidbit()]} initialCursor={null} />);
-    expect(container.querySelectorAll(".pl-5").length).toBe(1);
+    expect(container.querySelectorAll(".masonry-layout").length).toBe(1);
+    expect(container.querySelectorAll(".masonry-item").length).toBe(4);
     cleanup();
   });
 
@@ -79,21 +71,19 @@ describe("MasonryFeed", () => {
     cleanup();
   });
 
-  it("distributes items into columns preserving each column's relative order (column-major)", () => {
-    setViewportWidth(1280);
-    const items = [
-      makeTidbit({ id: 1, header: "A" }),
-      makeTidbit({ id: 2, header: "B" }),
-      makeTidbit({ id: 3, header: "C" }),
-      makeTidbit({ id: 4, header: "D" }),
-    ];
-    const { container } = render(<MasonryFeed initialItems={items} initialCursor={null} />);
-    const columns = container.querySelectorAll(".pl-5");
-    // 3 columns, round-robin: col0 -> [A, D], col1 -> [B], col2 -> [C]
-    expect(columns[0].textContent).toContain("A");
-    expect(columns[1].textContent).toContain("B");
-    expect(columns[2].textContent).toContain("C");
-    expect(columns[0].textContent).toContain("D");
+  it("packs variable card heights into the shortest column", () => {
+    const result = packMasonry([
+      { key: "A", height: 300 },
+      { key: "B", height: 100 },
+      { key: "C", height: 100 },
+      { key: "D", height: 100 },
+    ], 3, 20);
+    expect(result.placements).toEqual([
+      { key: "A", column: 0, top: 0 },
+      { key: "B", column: 1, top: 0 },
+      { key: "C", column: 2, top: 0 },
+      { key: "D", column: 1, top: 120 },
+    ]);
     cleanup();
   });
 
