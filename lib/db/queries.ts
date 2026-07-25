@@ -93,7 +93,7 @@ export type Tidbit = {
   category: { slug: string; name: string; accentColor: string };
 };
 
-export const FEED_PAGE_SIZE = 24;
+export const FEED_PAGE_SIZE = 20;
 
 type DateCursor = { mode: "date"; createdAt: number; id: number };
 type RankCursor = { mode: "rank"; rank: number; id: number };

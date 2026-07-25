@@ -3,6 +3,23 @@ import { createTestDb, seedCategory, seedTidbit } from "./test-helpers";
 import { getFeedPage } from "./queries";
 
 describe("getFeedPage", () => {
+  it("uses a 20-item default page and continues from the twentieth item", async () => {
+    const db = await createTestDb();
+    const categoryId = await seedCategory(db);
+    for (let index = 0; index < 21; index += 1) {
+      await seedTidbit(db, categoryId, { header: `Header ${index}`, body: `Body ${index}`, createdAt: 1_000 - index });
+    }
+
+    const firstPage = await getFeedPage({}, db);
+    const secondPage = await getFeedPage({ cursor: firstPage.nextCursor }, db);
+
+    expect(firstPage.items).toHaveLength(20);
+    expect(firstPage.nextCursor).not.toBeNull();
+    expect(secondPage.items).toHaveLength(1);
+    expect(new Set(secondPage.items.map((item) => item.id)).size).toBe(1);
+    expect(firstPage.items.some((item) => item.id === secondPage.items[0].id)).toBe(false);
+  });
+
   it("returns the newest published tidbits with no filter/search", async () => {
     const db = await createTestDb();
     const categoryId = await seedCategory(db);

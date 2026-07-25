@@ -9,7 +9,7 @@ import { packMasonry, type MasonryPlacement } from "@/lib/masonry";
 
 export const RENDER_CAP = 500;
 export const BREAKPOINTS = { default: 3, 1024: 2, 640: 1 };
-const SKELETON_COUNT = 6;
+const SKELETON_COUNT = 20;
 const MASONRY_GAP = 20;
 
 function columnCountForWidth(width: number) {
@@ -78,7 +78,7 @@ export function MasonryFeed({
     if (!sentinel) return;
       const observer = new IntersectionObserver((entries) => {
         if (entries[0]?.isIntersecting) loadMore();
-      }, { rootMargin: "800px 0px" });
+      }, { rootMargin: "1200px 0px" });
     observer.observe(sentinel);
     return () => observer.disconnect();
   }, [loadMore]);

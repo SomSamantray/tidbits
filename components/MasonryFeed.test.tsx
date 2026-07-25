@@ -107,7 +107,7 @@ describe("MasonryFeed", () => {
 
     const { container } = render(<MasonryFeed initialItems={[makeTidbit()]} initialCursor="some-cursor" />);
     fireEvent.click(screen.getByText(/load more/i));
-    await waitFor(() => expect(container.querySelectorAll(".skeleton-card").length).toBe(6));
+    await waitFor(() => expect(container.querySelectorAll(".skeleton-card").length).toBe(20));
     expect(screen.getByText("Header")).toBeDefined();
 
     resolveRequest?.({ ok: true, json: async () => ({ items: [], nextCursor: null }) });
