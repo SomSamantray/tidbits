@@ -261,38 +261,11 @@ h3,
   grid-column: 1 / -1;
   grid-row: 2;
   cursor: default;
-  outline: none;
   border-radius: 0.75rem;
 }
 
-.tidbit-card-body:focus-visible {
-  outline: 3px solid color-mix(in srgb, var(--accent-sky) 70%, var(--foreground));
-  outline-offset: 4px;
-}
-
-.tidbit-copy-window {
-  position: relative;
-}
-
 .tidbit-body {
-  transition: max-height 0.35s ease;
-}
-
-.tidbit-card-body[data-collapsible="false"] .tidbit-body {
-  max-height: none;
-  overflow: visible;
   transition: none;
-}
-
-.tidbit-card-body[data-collapsible="true"] .tidbit-body {
-  max-height: 7.5rem;
-  padding-bottom: 1.35rem;
-  overflow: hidden;
-}
-
-.tidbit-card-body[data-expanded="true"] .tidbit-body {
-  max-height: 60rem;
-  padding-bottom: 0;
 }
 
 .tidbit-paragraph {
@@ -302,51 +275,6 @@ h3,
 
 .tidbit-paragraph-spaced {
   margin-top: 0.9rem;
-}
-
-.read-more-hint {
-  position: absolute;
-  right: 0;
-  bottom: 0;
-  padding-left: 1.5rem;
-  background: linear-gradient(90deg, transparent, var(--surface) 20%);
-  color: var(--foreground);
-  font-size: 0.7rem;
-  font-weight: 800;
-  letter-spacing: 0.01em;
-}
-
-.mobile-hint {
-  display: none;
-}
-
-@media (min-width: 641px) {
-  .tidbit-card-body[data-collapsible="true"] .tidbit-body {
-    max-height: none;
-    padding-bottom: 0;
-    overflow: visible;
-    transition: none;
-  }
-
-  .tidbit-card-body .read-more-hint {
-    display: none;
-  }
-}
-
-@media (max-width: 640px) {
-  .tidbit-card-body {
-    cursor: pointer;
-  }
-}
-
-@media (pointer: coarse) {
-  .desktop-hint {
-    display: none;
-  }
-
-  .mobile-hint {
-    display: inline;
-  }
 }
 
 @media (prefers-reduced-motion: reduce) {

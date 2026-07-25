@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildCategoryMap, categorizeEntries, importPreparedEntries, parseEntries, publishApproved, reconcilePreparedHeaders, validateEntries } from "./import-tidbits";
+import { buildCategoryMap, categorizeEntries, importPreparedEntries, parseEntries, publishApproved, reconcilePreparedEntries, reconcilePreparedHeaders, validateEntries } from "./import-tidbits";
 import { fingerprint, type PreparedRecord } from "./prepare-whatsapp-trivia";
 import { createTestDb, seedCategory, seedTidbit } from "../lib/db/test-helpers";
 
@@ -152,5 +152,46 @@ describe("structured prepared import", () => {
     expect(row.rows[0]).toMatchObject({ header: cleaned.header, body, source_hash: cleaned.fingerprint });
     const fts = await db.execute({ sql: "SELECT rowid FROM tidbits_fts WHERE tidbits_fts MATCH ?", args: ["New"] });
     expect(fts.rows).toHaveLength(1);
+  });
+
+  it("reconciles changed bodies by the old fingerprint and preserves row state", async () => {
+    const db = await createTestDb();
+    const categoryId = await seedCategory(db);
+    const previous = prepared({ header: "Old header", body: "Old source lead and body." });
+    const corrected = prepared({ header: "New body-supported header", body: "Restored source lead and complete body." });
+    const id = await seedTidbit(db, categoryId, { header: previous.header, body: previous.body, sourceHash: previous.fingerprint, createdAt: 123, isPublished: 0 });
+    await db.execute({ sql: "UPDATE tidbits SET like_count = 7, share_count = 3 WHERE id = ?", args: [id] });
+
+    expect(await reconcilePreparedEntries(db, [previous], [corrected])).toBe(1);
+    const row = await db.execute({ sql: "SELECT header, body, category_id, created_at, like_count, share_count, is_published, source_hash FROM tidbits WHERE id = ?", args: [id] });
+    expect(row.rows[0]).toMatchObject({
+      header: corrected.header,
+      body: corrected.body,
+      category_id: categoryId,
+      created_at: 123,
+      like_count: 7,
+      share_count: 3,
+      is_published: 0,
+      source_hash: corrected.fingerprint,
+    });
+    const fts = await db.execute({ sql: "SELECT rowid FROM tidbits_fts WHERE tidbits_fts MATCH ?", args: ["complete"] });
+    expect(fts.rows).toHaveLength(1);
+    expect(await reconcilePreparedEntries(db, [previous], [corrected])).toBe(0);
+  });
+
+  it("rolls back a multi-row reconciliation when a later identity is missing", async () => {
+    const db = await createTestDb();
+    const categoryId = await seedCategory(db);
+    const previousA = prepared({ sourceRef: "message-001", header: "Old A" });
+    const previousB = prepared({ sourceRef: "message-002", header: "Old B" });
+    const correctedA = prepared({ sourceRef: "message-001", header: "New A" });
+    const correctedB = prepared({ sourceRef: "message-002", header: "New B" });
+    await seedTidbit(db, categoryId, { header: previousA.header, body: previousA.body, sourceHash: previousA.fingerprint });
+    await seedTidbit(db, categoryId, { header: previousB.header, body: previousB.body, sourceHash: previousB.fingerprint });
+    await db.execute({ sql: "DELETE FROM tidbits WHERE source_hash = ?", args: [previousB.fingerprint] });
+
+    await expect(reconcilePreparedEntries(db, [previousA, previousB], [correctedA, correctedB])).rejects.toThrow("Expected 2 source-identified rows, found 1");
+    const row = await db.execute({ sql: "SELECT header FROM tidbits WHERE source_hash = ?", args: [previousA.fingerprint] });
+    expect(row.rows[0].header).toBe(previousA.header);
   });
 });

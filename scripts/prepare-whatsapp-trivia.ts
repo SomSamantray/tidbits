@@ -93,10 +93,83 @@ const HEADER_REWRITES: Record<string, string> = {
   "message-154": "The Crazy Irony!",
   "message-155": "The Airbus Wiring Disaster",
   "message-157": "The eBay Stalking Scandal",
+  "message-009": "Rolls-Royce's Quietest Car",
+  "message-010": "Corporate Digital Forensics Teams",
+  "message-012": "The Jennifer Lopez Dress That Inspired Google Images",
+  "message-013": "Lamborghini's Bull Names",
+  "message-015": "The Telegraph Crossword Nazi Challenge",
+  "message-016": "The Netflix Prize Competition",
+  "message-017": "Nintendo's Playing-Card Origins",
+  "message-018": "Jef Raskin and the Macintosh Project",
+  "message-020": "The Coca-Cola Bank Gamble",
+  "message-022": "How OfferUp Began",
+  "message-023": "The Accidental Discovery of Super Glue",
+  "message-024": "The Invention of Post-it Notes",
+  "message-026": "The Polgar Chess Experiment",
+  "message-027": "Sony and Apple's Strange Patents",
+  "message-029": "Adult Entertainment's Technology Influence",
+  "message-030": "A&W's Third-Place Marketing Claim",
+  "message-031": "Spotify's Music Recommendation Breakthrough",
+  "message-033": "Pepsi's Harrier Jet Promotion",
+  "message-035": "The Gore-Tex Company Story",
+  "message-037": "The Immigrant Behind Bank of America",
+  "message-039": "The Windows 95 Startup Sound",
+  "message-040": "The Invention of Auto-Tune",
+  "message-041": "GSK and McLaren's Toothpaste Partnership",
+  "message-042": "The Kingfisher-Inspired Shinkansen Nose",
+  "message-046": "Bootleggers and the Car Trade",
+  "message-047": "The Woman Who Invented Monopoly",
+  "message-048": "Volkswagen's Hidden Wartime History",
+  "message-049": "The CyberRebate Rebate Scam",
+  "message-050": "The Apollo Guidance Computer Engineer",
+  "message-051": "Japan's Best-Selling Super Mario Book",
+  "message-052": "Bill Gates' First Company: Traf-O-Data",
+  "message-053": "PepsiCo's Biodegradable Chip Packet",
+  "message-054": "Monopoly's Prisoner-of-War Escape Maps",
+  "message-055": "Zappos' Customer-Service Experiment",
+  "message-056": "Alex Tew's Million Dollar Homepage",
+  "message-057": "The Rolls-Royce Pinstripe Painter",
+  "message-058": "The Carrot-and-Eyesight Wartime Myth",
+  "message-061": "The Xbox and PlayStation Supercomputer",
+  "message-063": "The Happy Birthday Song's Copyright Story",
+  "message-064": "Why UPS Avoids Left Turns",
+  "message-065": "McDonald's Investment in Chipotle and More",
+  "message-066": "The Folding Baby Buggy's Aeronautical Designer",
+  "message-067": "The Birth of Video-Game Ratings",
+  "message-068": "The Idiocracy Shoe Paradox",
+  "message-069": "The Fake Restaurant That Became No. 1",
+  "message-070": "Why X-Men Were Classified as Non-Humans",
+  "message-075": "The White-Out Invention",
+  "message-076": "Christopher Nolan's Real-Plane Stunts",
+  "message-077": "McDonald's Failed Space Franchise",
+  "message-080": "Apollo 11's Two-Hour Moon Walk",
+  "message-085": "How Apple Found Its First Funding",
+  "message-086": "Low-Background Steel",
+  "message-087": "Kathy Xu's Nanjing Connection",
+  "message-089": "Why KitKat Flavours Differ by Country",
+  "message-092": "Honda's Famous Cog Advertisement",
+  "message-094": "Goldcorp's Open-Source Gold Hunt",
+  "message-098": "Wimbledon's Strawberry Business",
+  "message-100": "One Piece's Rejection Story",
+  "message-103": "Knight Capital's Trading Crash",
+  "message-104": "IKEA's Hidden Furniture Business",
+  "message-106": "Karl Marx and Friedrich Engels' Stock Trading",
+  "message-109": "The Birth of Reckitt",
+  "message-113": "McDonald's Russet Burbank Potato Problem",
+  "message-118": "The British Rifle-Scope Glass Substitute",
+  "message-119": "World of Warcraft's Real-World Fame",
+  "message-120": "The Credit Card Contract Trick",
+  "message-121": "The Chemistry Behind Engine Knock",
+  "message-126": "The Khosrowshahi Family Business Story",
+  "message-161": "Joyent Before AWS",
 };
 
 export function cleanHeader(sourceRef: string, header: string): string {
   return (HEADER_REWRITES[sourceRef] ?? header.replace(/^\s*\*+|\*+\s*$/gu, "").trim()).trim();
+}
+
+function normalizeSourceLead(header: string): string {
+  return header.replace(/^\s*\*+|\*+\s*$/gu, "").trim();
 }
 
 export function parseWhatsAppExport(raw: string): SourceMessage[] {
@@ -236,13 +309,15 @@ export function prepareMessages(messages: SourceMessage[]): {
     }
     const header = cleanHeader(candidate.sourceRef, candidate.header);
     const category = classifyCategory(candidate.header, candidate.body);
+    const sourceLead = normalizeSourceLead(candidate.header);
+    const body = header === sourceLead ? candidate.body : `${sourceLead}\n\n${candidate.body}`;
     records.push({
       sourceRef: candidate.sourceRef,
       header,
-      body: candidate.body,
+      body,
       category: category.slug,
       categoryReason: category.reason,
-      fingerprint: fingerprint(header, candidate.body),
+      fingerprint: fingerprint(header, body),
       reviewStatus: "approved",
     });
   }
