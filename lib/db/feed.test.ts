@@ -39,6 +39,20 @@ describe("getFeedPage", () => {
     expect(items[0].header).toBe("Octopus facts");
   });
 
+  it("matches a plural word in the content via prefix search on a singular query", async () => {
+    const db = await createTestDb();
+    const categoryId = await seedCategory(db);
+    await seedTidbit(db, categoryId, {
+      header: "Sharks existed before trees",
+      body: "Sharks have been around for roughly 400 million years.",
+    });
+
+    const { items } = await getFeedPage({ searchTerm: "shark" }, db);
+
+    expect(items).toHaveLength(1);
+    expect(items[0].header).toBe("Sharks existed before trees");
+  });
+
   it("returns an empty result set for a search term matching nothing, not an error", async () => {
     const db = await createTestDb();
     const categoryId = await seedCategory(db);

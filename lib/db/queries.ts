@@ -67,12 +67,16 @@ export function decodeCursor(value: string | null | undefined): Cursor | null {
 
 /**
  * FTS5 treats quotes/hyphens/AND/OR/NOT as operators. Wrapping the whole
- * term as one quoted phrase (with embedded quotes escaped) means any raw
- * visitor input is treated as literal text — malformed input degrades to
- * an empty/partial match, never a MATCH syntax error.
+ * word as its own quoted-prefix token (with embedded quotes escaped) means
+ * any raw visitor input is treated as literal text — operator characters
+ * degrade to an empty/partial match, never a MATCH syntax error — and the
+ * trailing `*` on each token matches word prefixes (e.g. "shark" matches
+ * "sharks") since FTS5's default tokenizer has no stemmer.
  */
 export function sanitizeSearchTerm(term: string): string {
-  return `"${term.replace(/"/g, '""')}"`;
+  const words = term.trim().split(/\s+/).filter(Boolean);
+  if (words.length === 0) return '""';
+  return words.map((word) => `"${word.replace(/"/g, '""')}"*`).join(" ");
 }
 
 function rowToTidbit(row: Record<string, unknown>): Tidbit {

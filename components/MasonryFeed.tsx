@@ -26,6 +26,7 @@ export function MasonryFeed({
   const [items, setItems] = useState(initialItems);
   const [cursor, setCursor] = useState(initialCursor);
   const [loading, setLoading] = useState(false);
+  const [loadError, setLoadError] = useState(false);
   const sentinelRef = useRef<HTMLDivElement>(null);
 
   // A new filter/search re-renders this component with fresh initial props
@@ -33,20 +34,26 @@ export function MasonryFeed({
   useEffect(() => {
     setItems(initialItems);
     setCursor(initialCursor);
+    setLoadError(false);
   }, [initialItems, initialCursor]);
 
   const loadMore = useCallback(async () => {
     if (loading || !cursor || items.length >= RENDER_CAP) return;
     setLoading(true);
+    setLoadError(false);
     try {
       const params = new URLSearchParams();
       params.set("cursor", cursor);
       if (categorySlug) params.set("category", categorySlug);
       if (searchTerm) params.set("q", searchTerm);
       const response = await fetch(`/api/feed?${params.toString()}`);
+      if (!response.ok) throw new Error(`Feed request failed: ${response.status}`);
       const data: { items: Tidbit[]; nextCursor: string | null } = await response.json();
       setItems((prev) => [...prev, ...data.items]);
       setCursor(data.nextCursor);
+    } catch {
+      // Keep the previously-loaded items visible; surface a retry affordance instead.
+      setLoadError(true);
     } finally {
       setLoading(false);
     }
@@ -80,13 +87,21 @@ export function MasonryFeed({
       <div ref={sentinelRef} className="h-1" />
 
       <div className="mt-6 flex flex-col items-center gap-3 pb-12 text-center">
+        {loadError && (
+          <p className="text-sm text-red-600">
+            Couldn&apos;t load more tidbits.{" "}
+            <button onClick={loadMore} className="underline">
+              Try again
+            </button>
+          </p>
+        )}
         {atCap && (
           <p className="text-sm text-ink-soft">
             Showing the first {RENDER_CAP} tidbits — use search or a category to see more.
           </p>
         )}
         {!atCap && atEnd && <p className="text-sm text-ink-soft">You&apos;ve seen every tidbit. 🎉</p>}
-        {!atCap && cursor && (
+        {!atCap && cursor && !loadError && (
           <button
             onClick={loadMore}
             disabled={loading}

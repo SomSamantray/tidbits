@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { describe, expect, it, vi, beforeEach } from "vitest";
-import { render, screen, cleanup } from "@testing-library/react";
+import { render, screen, cleanup, fireEvent, waitFor } from "@testing-library/react";
 import { MasonryFeed, RENDER_CAP } from "./MasonryFeed";
 import type { Tidbit } from "@/lib/db/queries";
 
@@ -95,5 +95,17 @@ describe("MasonryFeed", () => {
     expect(columns[1].textContent).toContain("B");
     expect(columns[2].textContent).toContain("C");
     cleanup();
+  });
+
+  it("shows a retry banner and keeps existing items when loading more fails", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: false, status: 500, json: async () => ({}) }));
+
+    render(<MasonryFeed initialItems={[makeTidbit({ id: 1, header: "Kept" })]} initialCursor="some-cursor" />);
+    fireEvent.click(screen.getByText(/load more/i));
+
+    await waitFor(() => expect(screen.getByText(/couldn't load more tidbits/i)).toBeDefined());
+    expect(screen.getByText("Kept")).toBeDefined();
+    cleanup();
+    vi.unstubAllGlobals();
   });
 });
