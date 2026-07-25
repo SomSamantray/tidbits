@@ -43,3 +43,8 @@ next-env.d.ts
 
 # local libsql dev database
 local.db*
+
+# private trivia import artifacts
+/data/raw/
+/data/staging/
+/data/reports/
