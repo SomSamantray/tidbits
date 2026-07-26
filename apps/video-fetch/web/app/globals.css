@@ -1,0 +1,54 @@
+@import "tailwindcss";
+
+:root {
+  --background: #fff8ef;
+  --foreground: #2d2a26;
+  --foreground-soft: #6b6560;
+  --surface: #fffdf8;
+  --terminal: #00ff9c;
+  --accent-sky: #9bf6ff;
+  --accent-lavender: #bdb2ff;
+  --accent-coral: #ffadad;
+}
+
+body {
+  background-color: var(--background);
+  background-image:
+    linear-gradient(rgba(45, 42, 38, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45, 42, 38, 0.04) 1px, transparent 1px);
+  background-size: 24px 24px;
+  color: var(--foreground);
+  font-family: ui-rounded, "Avenir Next", "Segoe UI", sans-serif;
+}
+
+.comic-card {
+  border: 2px solid var(--foreground);
+  box-shadow: 4px 4px 0 var(--foreground);
+  border-radius: 1rem;
+  background: var(--surface);
+}
+
+.comic-button {
+  border: 2px solid var(--foreground);
+  box-shadow: 3px 3px 0 var(--foreground);
+  border-radius: 9999px;
+  font-weight: 700;
+  transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+.comic-button:hover:not(:disabled) {
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 var(--foreground);
+}
+
+.comic-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.mono-label {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.75rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}

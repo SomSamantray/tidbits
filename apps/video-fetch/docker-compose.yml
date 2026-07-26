@@ -1,0 +1,43 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+
+  worker:
+    build:
+      context: ./worker
+    ports:
+      - "8000:8000"
+    environment:
+      REDIS_URL: redis://redis:6379
+      WORKER_PORT: "8000"
+      MAX_BATCH_SIZE: "50"
+      MAX_CONCURRENT_JOBS: "2"
+      RETENTION_HOURS: "24"
+      RATE_LIMIT_PER_MINUTE: "30"
+      YTDLP_COOKIES_YOUTUBE: ${YTDLP_COOKIES_YOUTUBE:-}
+      YTDLP_COOKIES_INSTAGRAM: ${YTDLP_COOKIES_INSTAGRAM:-}
+      YTDLP_COOKIES_FACEBOOK: ${YTDLP_COOKIES_FACEBOOK:-}
+      YTDLP_COOKIES_THREADS: ${YTDLP_COOKIES_THREADS:-}
+    volumes:
+      - ./worker:/app
+      - ./secrets:/secrets:ro
+    depends_on:
+      - redis
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+
+  web:
+    build:
+      context: ./web
+    ports:
+      - "3100:3100"
+    environment:
+      WORKER_URL: http://worker:8000
+      PORT: "3100"
+    volumes:
+      - ./web:/app
+      - /app/node_modules
+    depends_on:
+      - worker
+    command: npm run dev

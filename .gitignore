@@ -44,6 +44,10 @@ next-env.d.ts
 # local libsql dev database
 local.db*
 
+# video-fetch temp artifacts
+/apps/video-fetch/worker/tmp/
+/apps/video-fetch/downloads/
+
 # private trivia import artifacts
 /data/raw/
 /data/staging/

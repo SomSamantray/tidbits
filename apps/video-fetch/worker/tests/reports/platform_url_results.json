@@ -1,0 +1,312 @@
+{
+  "summary": {
+    "total": 30,
+    "detection_passed": 30,
+    "detection_failed": 0,
+    "metadata_passed": null,
+    "metadata_failed": null,
+    "metadata_skipped": 30
+  },
+  "results": [
+    {
+      "index": 1,
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+      "source": "web",
+      "detected_platform": "youtube",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 2,
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=jNQXAC9IVRw",
+      "source": "web",
+      "detected_platform": "youtube",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 3,
+      "platform": "vimeo",
+      "url": "https://vimeo.com/76979871",
+      "source": "web",
+      "detected_platform": "vimeo",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 4,
+      "platform": "vimeo",
+      "url": "https://vimeo.com/148751763",
+      "source": "web",
+      "detected_platform": "vimeo",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 5,
+      "platform": "linkedin",
+      "url": "https://www.linkedin.com/posts/dakshtrehan_ai-llm-abacusai-ugcPost-7483444993299308544-_5dp/",
+      "source": "user",
+      "detected_platform": "linkedin",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 6,
+      "platform": "linkedin",
+      "url": "https://www.linkedin.com/video/live/urn:li:ugcPost:7122680222088663040/",
+      "source": "placeholder",
+      "detected_platform": "linkedin",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 7,
+      "platform": "instagram",
+      "url": "https://www.instagram.com/reel/DbLoOCRBqqf/",
+      "source": "user",
+      "detected_platform": "instagram",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 8,
+      "platform": "instagram",
+      "url": "https://www.instagram.com/p/C8QZQZQZQZQ/",
+      "source": "placeholder",
+      "detected_platform": "instagram",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 9,
+      "platform": "x",
+      "url": "https://x.com/nasa/status/1447940985550540801",
+      "source": "web",
+      "detected_platform": "x",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 10,
+      "platform": "x",
+      "url": "https://twitter.com/Twitter/status/1637832675719774209",
+      "source": "web",
+      "detected_platform": "x",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 11,
+      "platform": "reddit",
+      "url": "https://www.reddit.com/r/videos/comments/6rrwyj/that_look_when_you_touch_the_stove/",
+      "source": "web",
+      "detected_platform": "reddit",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 12,
+      "platform": "reddit",
+      "url": "https://www.reddit.com/r/videos/comments/70bc1b/the_most_important_video_on_the_internet/",
+      "source": "web",
+      "detected_platform": "reddit",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 13,
+      "platform": "ninegag",
+      "url": "https://9gag.com/gag/aRQVWjM",
+      "source": "web",
+      "detected_platform": "ninegag",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 14,
+      "platform": "ninegag",
+      "url": "https://9gag.com/gag/ap5AO19",
+      "source": "web",
+      "detected_platform": "ninegag",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 15,
+      "platform": "facebook",
+      "url": "https://www.facebook.com/watch/?v=10158329692521729",
+      "source": "placeholder",
+      "detected_platform": "facebook",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 16,
+      "platform": "facebook",
+      "url": "https://www.facebook.com/reel/1234567890123456",
+      "source": "placeholder",
+      "detected_platform": "facebook",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 17,
+      "platform": "threads",
+      "url": "https://www.threads.net/@nasa/post/C8QZQZQZQZQ",
+      "source": "placeholder",
+      "detected_platform": "threads",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 18,
+      "platform": "threads",
+      "url": "https://www.threads.com/@sports.beer.jokes/post/DayLc-Sj5Xa",
+      "source": "user",
+      "detected_platform": "threads",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 19,
+      "platform": "snapchat",
+      "url": "https://www.snapchat.com/spotlight/example123",
+      "source": "placeholder",
+      "detected_platform": "snapchat",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 20,
+      "platform": "snapchat",
+      "url": "https://story.snapchat.com/p/example/123",
+      "source": "placeholder",
+      "detected_platform": "snapchat",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 21,
+      "platform": "loom",
+      "url": "https://www.loom.com/share/cc473529992342f1b9e8a90f04ece796",
+      "source": "web",
+      "detected_platform": "loom",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 22,
+      "platform": "loom",
+      "url": "https://www.loom.com/share/a08060fab72242eaa6951c8979cc9402",
+      "source": "web",
+      "detected_platform": "loom",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 23,
+      "platform": "pinterest",
+      "url": "https://www.pinterest.com/pin/687456721234567890/",
+      "source": "placeholder",
+      "detected_platform": "pinterest",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 24,
+      "platform": "pinterest",
+      "url": "https://pin.it/4kZQZQZQZ",
+      "source": "placeholder",
+      "detected_platform": "pinterest",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 25,
+      "platform": "pexels",
+      "url": "https://www.pexels.com/video/tranquil-natural-cascading-waterfall-in-forest-37262887/",
+      "source": "web",
+      "detected_platform": "pexels",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 26,
+      "platform": "pexels",
+      "url": "https://www.pexels.com/video/serene-coastal-beach-with-clear-blue-skies-37443533/",
+      "source": "web",
+      "detected_platform": "pexels",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 27,
+      "platform": "unsplash",
+      "url": "https://unsplash.com/videos/aerial-view-of-ocean-waves-1234567890",
+      "source": "placeholder",
+      "detected_platform": "unsplash",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 28,
+      "platform": "unsplash",
+      "url": "https://unsplash.com/videos/waterfall-in-forest-9876543210",
+      "source": "placeholder",
+      "detected_platform": "unsplash",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 29,
+      "platform": "tumblr",
+      "url": "https://www.tumblr.com/nasa/123456789012345678/official-nasa-video",
+      "source": "placeholder",
+      "detected_platform": "tumblr",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    },
+    {
+      "index": 30,
+      "platform": "tumblr",
+      "url": "https://staff.tumblr.com/post/123456789012345678/video-post",
+      "source": "placeholder",
+      "detected_platform": "tumblr",
+      "detect_pass": true,
+      "metadata_pass": null,
+      "metadata_detail": "skipped"
+    }
+  ]
+}
